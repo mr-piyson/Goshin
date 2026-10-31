@@ -174,6 +174,16 @@ const MotivationWidget = memo(function MotivationWidget({
 
   const current = QUOTES[index] ?? QUOTES[0];
 
+  const enterFrom = reduceMotion
+  ? { opacity: 0 }
+  : { opacity: 0, y: 12, filter: "blur(6px)" };
+
+const enterTo = { opacity: 1, y: 0, filter: "blur(0px)" };
+
+const exitTo = reduceMotion
+  ? { opacity: 0 }
+  : { opacity: 0, y: -10, filter: "blur(4px)" }
+
   if (!current) return null;
 
   return (
@@ -182,12 +192,8 @@ const MotivationWidget = memo(function MotivationWidget({
       <AnimatePresence initial={false} mode="wait">
         <motion.div
           key={index}
-          initial={false}
-          animate={{
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-          }}
+          initial={enterFrom}
+          animate={enterTo}
           exit={
             reduceMotion
               ? { opacity: 0 }
