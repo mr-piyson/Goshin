@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setWidget, setSidebarApp, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setAll } from "@/store/settingsSlice";
 import type { RootState, AppDispatch } from "@/store";
 import { CalendarIcon, MailIcon, TasksIcon, NotesIcon, HistoryIcon, TranslateIcon, GameIcon, HourglassIcon, GlobeIcon, PinIcon, SlidersIcon } from "./Icons";
+import { Switch } from "./switch";
 
 const SIDEBAR_APP_OPTIONS = [
   { id: "calendar", label: "Calendar", hint: "Google Calendar & meetings", Icon: CalendarIcon },
@@ -43,14 +44,6 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
         </button>
       ))}
     </div>
-  );
-}
-
-function Switch({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {
-  return (
-    <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={onChange} className={`relative h-5 w-9 shrink-0 rounded-full border transition-colors duration-150 ${checked ? "border-transparent bg-violet-500" : "border-[color:var(--border)] ui-field"}`}>
-      <span className={`absolute top-0.5 h-3.5 w-3.5 rounded-full bg-white shadow transition-transform duration-150 ${checked ? "translate-x-[18px]" : "translate-x-0.5"}`} />
-    </button>
   );
 }
 

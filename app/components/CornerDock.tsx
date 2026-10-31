@@ -3,20 +3,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { setWidget } from "@/store/settingsSlice";
 import type { AppDispatch, RootState } from "@/store";
 import { GearIcon, ImageIcon, MoreIcon, SlidersIcon } from "./Icons";
+import { Switch } from "./switch";
 
 const VISIBILITY_OPTIONS = [
   { id: "motivation", label: "Motivation" },
   { id: "time", label: "Time and date" },
   { id: "weather", label: "Weather" },
 ];
-
-function Switch({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {
-  return (
-    <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={onChange} className={`relative h-5 w-9 shrink-0 rounded-full border transition-colors duration-150 ${checked ? "border-transparent bg-violet-500" : "border-[color:var(--border)] ui-field"}`}>
-      <span className={`absolute top-0.5 h-3.5 w-3.5 rounded-full bg-white shadow transition-transform duration-150 ${checked ? "translate-x-[18px]" : "translate-x-0.5"}`} />
-    </button>
-  );
-}
 
 interface CornerDockProps {
   onOpenBackground: () => void;
