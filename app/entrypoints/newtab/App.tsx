@@ -205,19 +205,15 @@ export default function App() {
       className={`
         flex h-[72px] items-stretch overflow-hidden rounded-xl
         transition-[padding] duration-300
-        ${weatherVisible || timeVisible
-          ? "glass px-1"
-          : "px-0"}
+        ${cornerMounted || weatherVisible || timeVisible ? "glass" : ""}
+        ${weatherVisible || timeVisible ? "px-1" : "px-0"}
       `}
     >
       <Collapsible open={weatherVisible} width={113}>
         <WeatherWidget />
       </Collapsible>
 
-      <Collapsible
-        open={weatherVisible && timeVisible}
-        width={9}
-      >
+      <Collapsible open={weatherVisible && timeVisible} width={9}>
         <div className="flex h-full items-center justify-center">
           <div className="h-4 w-px bg-[color:var(--border)]" />
         </div>
