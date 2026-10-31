@@ -10,6 +10,18 @@ const TIME_TRANSITION = {
   ease: [0.22, 1, 0.36, 1] as const,
 };
 
+const enterInitial = (reduceMotion: boolean) =>
+  reduceMotion
+    ? { opacity: 0 }
+    : { opacity: 0, y: "65%", filter: "blur(3px)" };
+
+const enterAnimate = { opacity: 1, y: "0%", filter: "blur(0px)" };
+
+const exitAnimate = (reduceMotion: boolean) =>
+  reduceMotion
+    ? { opacity: 0 }
+    : { opacity: 0, y: "-65%", filter: "blur(3px)" };
+
 const AnimatedTime = memo(function AnimatedTime({
   value,
   reduceMotion,
@@ -27,26 +39,10 @@ const AnimatedTime = memo(function AnimatedTime({
           <AnimatePresence initial={false} mode="sync">
             <motion.span
               key={`${index}-${char}`}
-              initial={false}
-              animate={{
-                opacity: 1,
-                y: "0%",
-                filter: "blur(0px)",
-              }}
-              exit={
-                reduceMotion
-                  ? { opacity: 0 }
-                  : {
-                      opacity: 0,
-                      y: "-65%",
-                      filter: "blur(3px)",
-                    }
-              }
-              transition={
-                reduceMotion
-                  ? { duration: 0.1 }
-                  : TIME_TRANSITION
-              }
+              initial={enterInitial(reduceMotion)}
+              animate={enterAnimate}
+              exit={exitAnimate(reduceMotion)}
+              transition={reduceMotion ? { duration: 0.1 } : TIME_TRANSITION }
               className="col-start-1 row-start-1 inline-block"
             >
               {char === " " ? "\u00A0" : char}
