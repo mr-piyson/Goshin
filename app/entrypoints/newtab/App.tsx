@@ -201,7 +201,6 @@ export default function App() {
   return (
     <div className={`ntp-root theme-${theme} flex h-screen w-screen flex-col overflow-hidden`}>
       {look.kind === "video" ? <LoopingVideo key={look.url} className="ntp-bg" src={look.url} /> : <div className="ntp-bg" style={{ background: look.css }} aria-hidden="true" />}
-      <div className="ntp-scrim" aria-hidden="true" />
 
       {/* Collapsible Sidebar on screen edge with all apps */}
       <Sidebar onOpenSettingsModal={() => setPanel("settings")} />
