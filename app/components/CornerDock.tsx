@@ -9,6 +9,7 @@ const VISIBILITY_OPTIONS = [
   { id: "motivation", label: "Motivation" },
   { id: "time", label: "Time and date" },
   { id: "weather", label: "Weather" },
+  { id: "search", label: "Search Bar" },
 ];
 
 interface CornerDockProps {
