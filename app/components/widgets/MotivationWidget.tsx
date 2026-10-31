@@ -157,7 +157,7 @@ interface MotivationWidgetProps {
 }
 
 const MotivationWidget = memo(function MotivationWidget({
-  interval = 30_000,
+  interval = 60 * 60 * 1000, // default to 60 minutes
 }: MotivationWidgetProps) {
   const [index, setIndex] = useState(0);
   const reduceMotion = useReducedMotion();
