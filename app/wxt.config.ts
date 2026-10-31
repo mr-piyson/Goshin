@@ -1,40 +1,29 @@
-import { defineConfig } from 'wxt';
+import { defineConfig } from "wxt";
+import tailwindcss from "@tailwindcss/vite";
+
 export default defineConfig({
   manifestVersion: 3,
-  modules: ['@wxt-dev/module-react'],
+  modules: ["@wxt-dev/module-react"],
   manifest: {
-    name: 'Manganum Clone',
-    short_name: 'MC',
-    description: 'Productivity new-tab + side panel (Chrome/Firefox)',
-    version: '0.1.0',
-    permissions: [
-      'storage',
-      'unlimitedStorage',
-      'topSites',
-      'history',
-      'alarms',
-      'scripting',
-      'cookies',
-      'contextMenus',
-      'tabGroups',
-      'bookmarks',
-      'offscreen',
-      'sidePanel',
-      'tabs',
-      'sessions',
-      'idle',
-      'search',
-    ],
-    host_permissions: ['http://*/*', 'https://*/*'],
+    name: "Manganum Clone",
+    short_name: "MC",
+    description: "Productivity new-tab + side panel (Chrome/Firefox)",
+    version: "0.1.0",
+    permissions: ["storage", "unlimitedStorage", "topSites", "history", "alarms", "scripting", "cookies", "contextMenus", "tabGroups", "bookmarks", "offscreen", "sidePanel", "tabs", "sessions", "idle", "search"],
+    host_permissions: ["http://*/*", "https://*/*"],
     browser_specific_settings: {
       gecko: {
-        id: 'manganum-clone@example.com',
-        strict_min_version: '121.0',
+        id: "manganum-clone@example.com",
+        strict_min_version: "121.0",
       },
     },
-    action: { default_title: 'Open side panel' },
-    chrome_url_overrides: { newtab: 'newtab.html' },
-    side_panel: { default_path: 'sidepanel.html' },
+    action: { default_title: "Open side panel" },
+    chrome_url_overrides: { newtab: "newtab.html" },
+    side_panel: { default_path: "sidepanel.html" },
   },
   suppressWarnings: { firefoxDataCollection: true },
+
+  vite: () => ({
+    plugins: [tailwindcss()],
+  }),
 });
