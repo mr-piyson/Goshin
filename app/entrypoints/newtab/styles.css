@@ -264,44 +264,6 @@ body {
   background: var(--surface-strong);
 }
 
-.ui-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.ui-btn:hover {
-  background: var(--surface-strong);
-}
-
-.ui-btn-active {
-  background: var(--accent);
-  color: var(--text);
-  box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.35);
-}
-
-.ui-input {
-  background: var(--field);
-  border: 1px solid var(--border);
-  color: var(--text);
-  outline: none;
-}
-
-.ui-input::placeholder {
-  color: var(--muted);
-}
-
-.ui-input:focus {
-  border-color: rgba(167, 139, 250, 0.7);
-}
-
 .icon-btn {
   display: inline-flex;
   align-items: center;

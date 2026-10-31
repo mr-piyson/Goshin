@@ -15,7 +15,7 @@ export default function LifeTimerWidget() {
     return (
       <div className="ui-tile rounded-xl p-4">
         <div className="mb-2 text-sm">Enter your date of birth</div>
-        <input type="date" defaultValue={dob} onBlur={(e) => save(e.target.value)} className="ui-input rounded-lg px-3 py-2 text-sm" />
+        <input type="date" defaultValue={dob} onBlur={(e) => save(e.target.value)} className="rounded-lg px-3 py-2 text-sm" />
       </div>
     );
   }

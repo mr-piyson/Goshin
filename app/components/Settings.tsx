@@ -38,7 +38,7 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
   return (
     <div className="inline-flex rounded-full border border-[color:var(--border)] p-0.5">
       {options.map((option) => (
-        <button key={option.value} type="button" onClick={() => onChange(option.value)} className={`rounded-full px-3 py-1 text-xs capitalize transition ${value === option.value ? "ui-btn-active" : "ui-muted hover:text-[color:var(--text)]"}`}>
+        <button key={option.value} type="button" onClick={() => onChange(option.value)} className={`rounded-full px-3 py-1 text-xs capitalize transition ${value === option.value ? "" : "ui-muted hover:text-[color:var(--text)]"}`}>
           {option.label}
         </button>
       ))}
@@ -202,10 +202,10 @@ export default function Settings() {
 
       <Section title="Data" description="Keep a copy of your preferences, or restore them on another device.">
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={exportSettings} className="ui-btn rounded-lg px-3 py-1.5 text-xs">
+          <button type="button" onClick={exportSettings} className="rounded-lg px-3 py-1.5 text-xs">
             Export settings
           </button>
-          <label className="ui-btn cursor-pointer rounded-lg px-3 py-1.5 text-xs">
+          <label className="cursor-pointer rounded-lg px-3 py-1.5 text-xs">
             Import settings
             <input
               type="file"

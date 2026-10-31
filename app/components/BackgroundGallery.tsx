@@ -58,7 +58,7 @@ export default function BackgroundGallery() {
             type="button"
             onClick={() => setTab(item.id)}
             className={`flex-1 rounded-full px-2.5 py-1.5 text-xs transition ${
-              tab === item.id ? 'ui-btn-active' : 'ui-muted hover:text-[color:var(--text)]'
+              tab === item.id ? '' : 'ui-muted hover:text-[color:var(--text)]'
             }`}
           >
             {item.label}
@@ -135,7 +135,7 @@ export default function BackgroundGallery() {
                   Reset disliked ({bg.disliked.length})
                 </button>
               )}
-              <button type="button" onClick={shuffle} className="ui-btn rounded-lg px-2.5 py-1">
+              <button type="button" onClick={shuffle} className="rounded-lg px-2.5 py-1">
                 Surprise me
               </button>
             </div>
@@ -206,7 +206,7 @@ export default function BackgroundGallery() {
                 {dragging ? <UploadIcon className="h-5 w-5" /> : <ImageIcon className="h-5 w-5" />}
               </span>
               <div className="text-sm">{dragging ? 'Drop the file to upload it' : 'Drop an image or video here'}</div>
-              <button type="button" onClick={() => fileInput.current?.click()} className="ui-btn rounded-lg px-3 py-1.5 text-xs">
+              <button type="button" onClick={() => fileInput.current?.click()} className="rounded-lg px-3 py-1.5 text-xs">
                 or click to browse
               </button>
               <input

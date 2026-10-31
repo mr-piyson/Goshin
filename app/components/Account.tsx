@@ -19,7 +19,7 @@ export default function Account() {
           <div className="truncate font-medium">{email ?? 'Not signed in'}</div>
           <div className="text-xs ui-muted">Cloud sync requires an OAuth client id in the manifest.</div>
         </div>
-        <button onClick={() => alert('Configure oauth2 in wxt.config.ts to enable sign-in.')} className="ui-btn shrink-0 rounded-lg px-3 py-1.5 text-sm">
+        <button onClick={() => alert('Configure oauth2 in wxt.config.ts to enable sign-in.')} className="shrink-0 rounded-lg px-3 py-1.5 text-sm">
           Sign in
         </button>
       </div>

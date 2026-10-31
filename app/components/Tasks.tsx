@@ -23,7 +23,7 @@ export default function Tasks() {
     <div className="w-full max-w-2xl">
       <h2 className="mb-3 text-base font-semibold">Tasks</h2>
       <div className="mb-4 flex gap-2">
-        <input value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} placeholder="New task" className="ui-input min-w-0 flex-1 rounded-lg px-3 py-2 text-sm" />
+        <input value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} placeholder="New task" className="min-w-0 flex-1 rounded-lg px-3 py-2 text-sm" />
         <button onClick={add} className="rounded-lg bg-violet-500 px-4 py-2 text-sm font-medium text-white hover:bg-violet-400">Add</button>
       </div>
       <ul className="flex flex-col gap-2">

@@ -23,7 +23,7 @@ export default function Translator() {
   return (
     <div className="w-full max-w-2xl">
       <h2 className="mb-3 text-base font-semibold">Translator</h2>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Enter text" rows={3} className="ui-input mb-2 w-full resize-none rounded-lg px-3 py-2 text-sm" />
+      <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Enter text" rows={3} className="mb-2 w-full resize-none rounded-lg px-3 py-2 text-sm" />
       <button onClick={translate} disabled={loading} className="rounded-lg bg-violet-500 px-4 py-2 text-sm font-medium text-white hover:bg-violet-400 disabled:opacity-50">
         {loading ? 'Translating…' : 'Translate to English'}
       </button>

@@ -9,8 +9,8 @@ export default defineConfig({
     short_name: "MC",
     description: "Productivity new-tab + side panel (Chrome/Firefox)",
     version: "0.1.0",
-    permissions: ["storage", "unlimitedStorage", "topSites", "history", "alarms", "scripting", "cookies", "contextMenus", "tabGroups", "bookmarks", "offscreen", "sidePanel", "tabs", "sessions", "idle", "search"],
-    host_permissions: ["http://*/*", "https://*/*"],
+    permissions: ["geolocation", "storage", "unlimitedStorage", "topSites", "history", "alarms", "scripting", "cookies", "contextMenus", "tabGroups", "bookmarks", "offscreen", "sidePanel", "tabs", "sessions", "idle", "search"],
+    host_permissions: ['http://*/*', 'https://*/*' , 'https://api.open-meteo.com/*'],
     browser_specific_settings: {
       gecko: {
         id: "manganum-clone@example.com",
