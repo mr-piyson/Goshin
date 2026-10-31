@@ -11,10 +11,10 @@ const OUTER_DURATION = 280;
 const CONTENT_DURATION = 180;
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-export const COLLAPSIBLE_EXIT_DURATION = OUTER_DURATION + CONTENT_DURATION;
+export const COLLAPSIBLE_EXIT_DURATION = Math.max(OUTER_DURATION, CONTENT_DURATION);
 
 /** Keeps a node mounted long enough for its exit animation to finish. */
-export function usePresence(open: boolean, duration = 300) {
+export function usePresence(open: boolean, duration = COLLAPSIBLE_EXIT_DURATION) {
   const [mounted, setMounted] = useState(open);
   const prefersReducedMotion = useReducedMotion();
   const exitDuration = prefersReducedMotion ? 0 : duration;
@@ -24,7 +24,6 @@ export function usePresence(open: boolean, duration = 300) {
       setMounted(true);
       return;
     }
-
     if (!mounted) return;
 
     const timer = window.setTimeout(() => setMounted(false), exitDuration);
@@ -58,22 +57,24 @@ function AnimatedCollapsible({
   const prefersReducedMotion = useReducedMotion();
   const outerDuration = prefersReducedMotion ? 0 : duration / 1000;
   const contentDuration = prefersReducedMotion ? 0 : CONTENT_DURATION / 1000;
+
   const containerVariants: Variants = {
     open: (targetWidth: number) => ({
       width: targetWidth,
       transition: {
-        when: 'beforeChildren',
+        when: 'beforeChildren', // mount stays sequential: width → content
         width: { duration: outerDuration, ease: EASE },
       },
     }),
     closed: {
       width: 0,
       transition: {
-        when: 'afterChildren',
+        // no `when` ⇒ width + content run together on exit
         width: { duration: outerDuration, ease: EASE },
       },
     },
   };
+
   const contentVariants: Variants = {
     open: {
       opacity: 1,
@@ -161,7 +162,6 @@ export function ResponsiveCollapsible({
     if (!element) return;
 
     const update = () => setWidth(element.getBoundingClientRect().width);
-
     update();
 
     const observer = new ResizeObserver(update);
