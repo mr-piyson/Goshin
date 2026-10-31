@@ -24,12 +24,12 @@ export default function Tasks() {
       <h2 className="mb-3 text-base font-semibold">Tasks</h2>
       <div className="mb-4 flex gap-2">
         <input value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} placeholder="New task" className="min-w-0 flex-1 rounded-lg px-3 py-2 text-sm" />
-        <button onClick={add} className="rounded-lg bg-violet-500 px-4 py-2 text-sm font-medium text-white hover:bg-violet-400">Add</button>
+        <button onClick={add} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent">Add</button>
       </div>
       <ul className="flex flex-col gap-2">
         {tasks.map((t) => (
           <li key={t.id} className="ui-tile flex items-center gap-3 rounded-xl p-3">
-            <input type="checkbox" checked={t.done} onChange={() => toggle(t)} className="h-4 w-4 accent-violet-500" />
+            <input type="checkbox" checked={t.done} onChange={() => toggle(t)} className="h-4 w-4 accent-accent" />
             <span className={`flex-1 text-sm ${t.done ? 'line-through ui-muted' : ''}`}>{t.title}</span>
             <button onClick={() => remove(t.id)} className="rounded bg-red-500/25 px-2 py-1 text-xs hover:bg-red-500/40">Del</button>
           </li>

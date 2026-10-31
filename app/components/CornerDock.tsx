@@ -59,17 +59,17 @@ export default function CornerDock({ onOpenBackground, onOpenMore, onOpenSetting
         </div>
       )}
 
-      <div className="glass flex items-center gap-1 rounded-2xl p-1 opacity-80 hover:opacity-100 transition-all ease-in">
-        <button type="button" className={`dock-btn ${open ? "" : ""}`} title="Widgets visibility" aria-label="Widgets visibility" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+      <div className="glass flex items-center gap-1 rounded-2xl p-1 hover:opacity-100 transition-all ease-in">
+        <button type="button" className={`inline-flex items-center justify-center h-8 w-8 rounded-[0.5rem] hover:bg-surface-strong ${open ? "bg-accent" : ""}`} title="Widgets visibility" aria-label="Widgets visibility" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
           <SlidersIcon className="h-[18px] w-[18px]" />
         </button>
-        <button type="button" className="dock-btn" title="Backgrounds" aria-label="Backgrounds" onClick={onOpenBackground}>
+        <button type="button" className="inline-flex items-center justify-center h-8 w-8 rounded-[0.5rem] hover:bg-surface-strong" title="Backgrounds" aria-label="Backgrounds" onClick={onOpenBackground}>
           <ImageIcon className="h-[18px] w-[18px]" />
         </button>
-        <button type="button" className="dock-btn" title="More" aria-label="More" onClick={onOpenMore}>
+        <button type="button" className="inline-flex items-center justify-center h-8 w-8 rounded-[0.5rem] hover:bg-surface-strong" title="More" aria-label="More" onClick={onOpenMore}>
           <MoreIcon className="h-[18px] w-[18px]" />
         </button>
-        <button type="button" className="dock-btn" title="Settings" aria-label="Settings" onClick={onOpenSettings}>
+        <button type="button" className="inline-flex items-center justify-center h-8 w-8 rounded-[0.5rem] hover:bg-surface-strong" title="Settings" aria-label="Settings" onClick={onOpenSettings}>
           <GearIcon className="h-[18px] w-[18px]" />
         </button>
       </div>

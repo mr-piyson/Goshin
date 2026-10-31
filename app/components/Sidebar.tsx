@@ -193,12 +193,12 @@ export default function Sidebar({ onOpenSettingsModal }: SidebarProps) {
         <div
           onMouseEnter={() => setIsHovered(true)}
           className={`fixed top-0 bottom-0 z-40 w-3 cursor-pointer transition-colors duration-200 ${
-            isLeft ? 'left-0 hover:bg-violet-500/20' : 'right-0 hover:bg-violet-500/20'
+            isLeft ? 'left-0 hover:bg-accent/20' : 'right-0 hover:bg-accent/20'
           }`}
           title="Hover to show sidebar"
         >
           <div
-            className={`absolute top-1/2 -translate-y-1/2 h-12 w-1 rounded-full bg-white/20 transition-all group-hover:bg-violet-400 ${
+            className={`absolute top-1/2 -translate-y-1/2 h-12 w-1 rounded-full bg-white/20 transition-all group-hover:bg-accent ${
               isLeft ? 'left-1' : 'right-1'
             }`}
           />
@@ -223,7 +223,7 @@ export default function Sidebar({ onOpenSettingsModal }: SidebarProps) {
         {/* Top: Logo / Mini indicator */}
         <div className="flex flex-col items-center gap-2">
           <div
-            className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-600/20 text-violet-400 font-bold text-xs select-none shadow-[0_0_12px_rgba(139,92,246,0.3)]"
+            className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-600/20 text-accent font-bold text-xs select-none shadow-[0_0_12px_rgba(139,92,246,0.3)]"
             title="Manganum Sidebar"
           >
             M
@@ -248,7 +248,7 @@ export default function Sidebar({ onOpenSettingsModal }: SidebarProps) {
                 onMouseLeave={() => setHoveredTooltip(null)}
                 className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 ${
                   isActive
-                    ? 'bg-violet-600/30 text-violet-300 shadow-[0_0_14px_rgba(139,92,246,0.4)] border border-violet-500/50 scale-105'
+                    ? 'bg-violet-600/30 text-accent/90 shadow-[0_0_14px_rgba(139,92,246,0.4)] border border-accent/50 scale-105'
                     : 'ui-muted hover:text-[color:var(--text)] hover:bg-[color:var(--surface-strong)] hover:scale-105 active:scale-95'
                 }`}
                 aria-label={app.label}
@@ -257,7 +257,7 @@ export default function Sidebar({ onOpenSettingsModal }: SidebarProps) {
                 <Icon className="h-4 w-4" />
                 {isActive && (
                   <span
-                    className={`absolute top-1/2 -translate-y-1/2 h-3.5 w-1 rounded-full bg-violet-400 ${
+                    className={`absolute top-1/2 -translate-y-1/2 h-3.5 w-1 rounded-full bg-accent ${
                       isLeft ? 'left-0.5' : 'right-0.5'
                     }`}
                   />
@@ -282,7 +282,7 @@ export default function Sidebar({ onOpenSettingsModal }: SidebarProps) {
             onMouseLeave={() => setHoveredTooltip(null)}
             className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 ${
               activeApp === 'account'
-                ? 'bg-violet-600/30 text-violet-300 border border-violet-500/50'
+                ? 'bg-violet-600/30 text-accent/90 border border-accent/50'
                 : 'ui-muted hover:text-[color:var(--text)] hover:bg-[color:var(--surface-strong)] hover:scale-105'
             }`}
             aria-label="Account"
@@ -307,7 +307,7 @@ export default function Sidebar({ onOpenSettingsModal }: SidebarProps) {
             onMouseLeave={() => setHoveredTooltip(null)}
             className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 ${
               activeApp === 'settings'
-                ? 'bg-violet-600/30 text-violet-300 border border-violet-500/50'
+                ? 'bg-violet-600/30 text-accent/90 border border-accent/50'
                 : 'ui-muted hover:text-[color:var(--text)] hover:bg-[color:var(--surface-strong)] hover:scale-105'
             }`}
             aria-label="Settings"
@@ -329,7 +329,7 @@ export default function Sidebar({ onOpenSettingsModal }: SidebarProps) {
             onMouseLeave={() => setHoveredTooltip(null)}
             className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-200 ${
               isPinned
-                ? 'text-violet-400 hover:bg-violet-500/20'
+                ? 'text-accent hover:bg-accent/20'
                 : 'ui-muted hover:text-[color:var(--text)] hover:bg-[color:var(--surface-strong)]'
             }`}
             aria-label={isPinned ? 'Unpin sidebar' : 'Pin sidebar'}
@@ -372,7 +372,7 @@ export default function Sidebar({ onOpenSettingsModal }: SidebarProps) {
             {/* Drawer Header */}
             <header className="flex items-center justify-between border-b border-[color:var(--border)] px-4 py-3 bg-[color:var(--surface)]/50">
               <div className="flex items-center gap-2.5 min-w-0">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-600/20 text-violet-400">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-600/20 text-accent">
                   <activeAppDef.Icon className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">

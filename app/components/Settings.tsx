@@ -45,9 +45,9 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
             type="button"
             onClick={() => onChange(option.value)}
             aria-pressed={isActive}
-            className={`relative rounded-full px-3 py-1 text-xs capitalize transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 focus-visible:ring-offset-0 ${
+            className={`relative rounded-full px-3 py-1 text-xs capitalize transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-acbg-accent/60 focus-visible:ring-offset-0 ${
               isActive
-                ? "bg-violet-500 font-medium text-white shadow-sm shadow-violet-500/40"
+                ? "bg-accent font-medium text-white shadow-sm shadow-acbg-accent/40"
                 : "text-[color:var(--muted)] hover:bg-[color:var(--field)] hover:text-[color:var(--text)]"
             }`}
           >
@@ -112,7 +112,7 @@ export default function Settings() {
                   <span
                     className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${
                       enabled
-                        ? "bg-violet-500/15 text-violet-500 dark:text-violet-300"
+                        ? "bg-accent/15 text-acbg-accent dark:text-accent/90"
                         : "bg-[color:var(--field)] text-[color:var(--muted)]"
                     }`}
                   >
@@ -131,7 +131,7 @@ export default function Settings() {
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] p-3">
           <div className="flex items-center gap-2">
-            <PinIcon className={`h-4 w-4 ${sidebarPinned ? "text-violet-500 dark:text-violet-300" : "ui-muted"}`} />
+            <PinIcon className={`h-4 w-4 ${sidebarPinned ? "text-acbg-accent dark:text-accent/90" : "ui-muted"}`} />
             <div>
               <span className="block text-xs font-medium">Pin sidebar</span>
               <span className="block text-[11px] ui-muted">Keep sidebar visible or auto-collapse to edge</span>
@@ -192,7 +192,7 @@ export default function Settings() {
             onChange={(value) => dispatch(setTimeFormat(value))}
           />
           <label className="flex cursor-pointer items-center gap-2 text-xs">
-            <input type="checkbox" checked={s.showSeconds} onChange={(event) => dispatch(setShowSeconds(event.target.checked))} className="h-3.5 w-3.5 accent-violet-500" />
+            <input type="checkbox" checked={s.showSeconds} onChange={(event) => dispatch(setShowSeconds(event.target.checked))} className="h-3.5 w-3.5 accent-acbg-accent" />
             Show seconds
           </label>
         </div>
@@ -238,11 +238,11 @@ export default function Settings() {
           <button
             type="button"
             onClick={exportSettings}
-            className="rounded-lg border border-[color:var(--border)] bg-[color:var(--field)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:bg-[color:var(--surface-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60"
+            className="rounded-lg border border-[color:var(--border)] bg-[color:var(--field)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:bg-[color:var(--surface-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-acbg-accent/60"
           >
             Export settings
           </button>
-          <label className="cursor-pointer rounded-lg border border-[color:var(--border)] bg-[color:var(--field)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:bg-[color:var(--surface-strong)] focus-within:ring-2 focus-within:ring-violet-500/60">
+          <label className="cursor-pointer rounded-lg border border-[color:var(--border)] bg-[color:var(--field)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:bg-[color:var(--surface-strong)] focus-within:ring-2 focus-within:ring-acbg-accent/60">
             Import settings
             <input
               type="file"

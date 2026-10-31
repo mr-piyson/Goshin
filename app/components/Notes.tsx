@@ -33,7 +33,7 @@ export default function Notes() {
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="rounded-lg px-3 py-2 text-sm" />
         <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Body" rows={3} className="resize-none rounded-lg px-3 py-2 text-sm" />
         <div className="flex gap-2">
-          <button onClick={save} className="rounded-lg bg-violet-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-violet-400">
+          <button onClick={save} className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent">
             {editing ? 'Update' : 'Add'}
           </button>
           {editing && <button onClick={() => { setEditing(null); setTitle(''); setBody(''); }} className="rounded-lg px-4 py-1.5 text-sm">Cancel</button>}

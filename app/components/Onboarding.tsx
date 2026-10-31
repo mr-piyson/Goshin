@@ -30,7 +30,7 @@ export default function Onboarding() {
               if (step < STEPS.length - 1) setStep(step + 1);
               else { browser.storage.local.set({ onboarded: true }); setOpen(false); }
             }}
-            className="rounded-xl bg-violet-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-400"
+            className="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent"
           >
             {step < STEPS.length - 1 ? 'Next' : 'Finish'}
           </button>

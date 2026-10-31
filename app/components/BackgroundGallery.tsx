@@ -79,7 +79,7 @@ export default function BackgroundGallery() {
                       onClick={() => dispatch(setCurrent(item.id))}
                       title={item.name}
                       className={`relative block h-24 w-full overflow-hidden rounded-xl border-2 transition ${
-                        active ? 'border-violet-400' : 'border-transparent hover:border-[color:var(--border)]'
+                        active ? 'border-accent' : 'border-transparent hover:border-[color:var(--border)]'
                       }`}
                       style={{ background: item.css }}
                     >
@@ -88,7 +88,7 @@ export default function BackgroundGallery() {
                         {item.name}
                       </span>
                       {active && (
-                        <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-white shadow">
+                        <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white shadow">
                           <CheckIcon className="h-3 w-3" />
                         </span>
                       )}
@@ -199,7 +199,7 @@ export default function BackgroundGallery() {
                 readFile(event.dataTransfer.files?.[0]);
               }}
               className={`flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-8 text-center transition ${
-                dragging ? 'border-violet-400 bg-violet-500/10' : 'border-[color:var(--border)]'
+                dragging ? 'border-accent bg-accent/10' : 'border-[color:var(--border)]'
               }`}
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-full ui-field">

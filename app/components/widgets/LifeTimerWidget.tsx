@@ -35,7 +35,7 @@ export default function LifeTimerWidget() {
       </div>
       <div className="mb-1 flex justify-between text-xs"><span>Lived {yearsLived.toFixed(1)}y</span><span>Left {yearsLeft.toFixed(1)}y</span></div>
       <div className="h-2 overflow-hidden rounded-full ui-field">
-        <div className="h-full rounded-full bg-gradient-to-r from-violet-400 to-sky-400" style={{ width: `${pct}%` }} />
+        <div className="h-full rounded-full bg-gradient-to-r from-accent to-sky-400" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
