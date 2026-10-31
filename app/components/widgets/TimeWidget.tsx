@@ -31,7 +31,7 @@ export default function TimeWidget() {
           ${isActive ? "bg-white/50" : ""}
         `}
       >
-        <div className="font-title text-xl font-medium leading-none tabular-nums">{now.format(fmt)}</div>
+        <div className="font-manrope text-xl font-medium leading-none tabular-nums">{now.format(fmt)}</div>
 
         <div className="mt-1.5 whitespace-nowrap text-sm font-normal leading-none ui-muted">{now.format("ddd, MMM D")}</div>
       </button>

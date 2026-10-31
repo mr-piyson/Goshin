@@ -47,7 +47,7 @@ export default function SearchWidget({ show = false }: SearchWidgetProps) {
   };
 
   return (
-    <Fade open={show} className="w-full">
+    <Fade open={show} className=" flex w-full items-center justify-center">
       <form onSubmit={submitSearch} className="w-full max-w-2xl">
         <div className="glass flex items-center gap-3 rounded-full px-5 py-3">
           <SearchIcon className="h-5 w-5 shrink-0 ui-muted" />

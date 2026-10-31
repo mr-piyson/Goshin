@@ -8,7 +8,7 @@ import Tasks from './Tasks';
 import Notes from './Notes';
 import HistoryWidget from './HistoryWidget';
 import Translator from './Translator';
-import LifeTimerWidget from './LifeTimerWidget';
+import LifeTimerWidget from './widgets/LifeTimerWidget';
 import TopSites from './TopSites';
 import Account from './Account';
 import Settings from './Settings';

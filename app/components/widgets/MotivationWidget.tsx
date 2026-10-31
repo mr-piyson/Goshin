@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "motion/react";
 import React, { useEffect, useState } from "react";
 
 type Quote = { id: number; text: string; author: string };
@@ -151,26 +152,54 @@ const QUOTES: Quote[] = [
   { id: 146, text: "Write your dreams in pen. Write your plans in pencil.", author: "Dan Go" },
 ];
 
-export default function MotivationWidget() {
+interface MotivationWidgetProps {
+  interval?: number; // milliseconds
+}
+
+export default function MotivationWidget({
+  interval = 30_000,
+}: MotivationWidgetProps) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const interval = window.setInterval(() => {
-      setIndex((previous) => (previous + 1) % QUOTES.length);
-    }, 12_000);
+    if (QUOTES.length <= 1 || interval <= 0) return;
 
-    return () => window.clearInterval(interval);
-  }, []);
+    const timer = window.setInterval(() => {
+      setIndex((previous) => (previous + 1) % QUOTES.length);
+    }, interval);
+
+    return () => window.clearInterval(timer);
+  }, [interval]);
 
   const current = QUOTES[index] ?? QUOTES[0];
 
   if (!current) return null;
 
   return (
-    <div className="glass rounded-2xl px-[31px] py-[13px] pb-[17px] text-center flex flex-col items-center justify-center">
-      <p className="font-title text-[28px] font-medium leading-[36px]">{current.text}</p>
+    <div className="glass rounded-2xl px-[31px] py-[13px] pb-[17px] text-center flex flex-col items-center justify-center overflow-hidden">
 
-      <span className="mt-2 text-sm text-gray-500 font-medium">— {current.author}</span>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+          transition={{
+            duration: 0.45,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          className="flex flex-col items-center"
+        >
+          <p className="font-manrope text-[28px] font-medium leading-[36px]">
+            {current.text}
+          </p>
+
+          <span className="mt-2 text-sm text-gray-500 font-medium">
+            — {current.author}
+          </span>
+        </motion.div>
+      </AnimatePresence>
+
     </div>
   );
 }

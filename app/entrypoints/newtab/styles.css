@@ -116,6 +116,9 @@ body {
 
 /* Tailwind utility registration */
 @theme inline {
+
+  --font-manrope: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
   --color-text: var(--text);
   --color-muted: var(--muted);
   --color-surface: var(--surface);
