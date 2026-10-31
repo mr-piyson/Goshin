@@ -36,12 +36,25 @@ function Section({ title, description, children }: { title: string; description?
 
 function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { value: T; label: string }[]; onChange: (value: T) => void }) {
   return (
-    <div className="inline-flex rounded-full border border-[color:var(--border)] p-0.5">
-      {options.map((option) => (
-        <button key={option.value} type="button" onClick={() => onChange(option.value)} className={`rounded-full px-3 py-1 text-xs capitalize transition ${value === option.value ? "" : "ui-muted hover:text-[color:var(--text)]"}`}>
-          {option.label}
-        </button>
-      ))}
+    <div role="group" className="inline-flex flex-wrap items-center gap-0.5 rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] p-0.5">
+      {options.map((option) => {
+        const isActive = value === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onChange(option.value)}
+            aria-pressed={isActive}
+            className={`relative rounded-full px-3 py-1 text-xs capitalize transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 focus-visible:ring-offset-0 ${
+              isActive
+                ? "bg-violet-500 font-medium text-white shadow-sm shadow-violet-500/40"
+                : "text-[color:var(--muted)] hover:bg-[color:var(--field)] hover:text-[color:var(--text)]"
+            }`}
+          >
+            {option.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -87,9 +100,22 @@ export default function Settings() {
             const enabled = sidebarApps[app.id] ?? true;
             const Icon = app.Icon;
             return (
-              <label key={app.id} className="ui-tile flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition hover:bg-[color:var(--surface-strong)]">
+              <label
+                key={app.id}
+                className={`ui-tile flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition ${
+                  enabled
+                    ? "border-[color:var(--border)]"
+                    : "border-transparent opacity-70 hover:opacity-100"
+                } hover:bg-[color:var(--surface-strong)]`}
+              >
                 <div className="flex min-w-0 items-center gap-2.5">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[color:var(--field)] text-[color:var(--text)]">
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${
+                      enabled
+                        ? "bg-violet-500/15 text-violet-500 dark:text-violet-300"
+                        : "bg-[color:var(--field)] text-[color:var(--muted)]"
+                    }`}
+                  >
                     <Icon className="h-4 w-4" />
                   </span>
                   <div className="min-w-0">
@@ -105,7 +131,7 @@ export default function Settings() {
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] p-3">
           <div className="flex items-center gap-2">
-            <PinIcon className="h-4 w-4 ui-muted" />
+            <PinIcon className={`h-4 w-4 ${sidebarPinned ? "text-violet-500 dark:text-violet-300" : "ui-muted"}`} />
             <div>
               <span className="block text-xs font-medium">Pin sidebar</span>
               <span className="block text-[11px] ui-muted">Keep sidebar visible or auto-collapse to edge</span>
@@ -136,7 +162,14 @@ export default function Settings() {
           {WIDGET_OPTIONS.map((widget) => {
             const enabled = s.widgets[widget.id] ?? true;
             return (
-              <label key={widget.id} className="ui-tile flex cursor-pointer items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs transition hover:bg-[color:var(--surface-strong)]">
+              <label
+                key={widget.id}
+                className={`ui-tile flex cursor-pointer items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs transition ${
+                  enabled
+                    ? "border-[color:var(--border)]"
+                    : "border-transparent opacity-70 hover:opacity-100"
+                } hover:bg-[color:var(--surface-strong)]`}
+              >
                 <div className="min-w-0">
                   <span className="block truncate font-medium">{widget.label}</span>
                   <span className="block truncate text-[10px] ui-muted">{widget.hint}</span>
@@ -202,10 +235,14 @@ export default function Settings() {
 
       <Section title="Data" description="Keep a copy of your preferences, or restore them on another device.">
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={exportSettings} className="rounded-lg px-3 py-1.5 text-xs">
+          <button
+            type="button"
+            onClick={exportSettings}
+            className="rounded-lg border border-[color:var(--border)] bg-[color:var(--field)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:bg-[color:var(--surface-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60"
+          >
             Export settings
           </button>
-          <label className="cursor-pointer rounded-lg px-3 py-1.5 text-xs">
+          <label className="cursor-pointer rounded-lg border border-[color:var(--border)] bg-[color:var(--field)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:bg-[color:var(--surface-strong)] focus-within:ring-2 focus-within:ring-violet-500/60">
             Import settings
             <input
               type="file"
