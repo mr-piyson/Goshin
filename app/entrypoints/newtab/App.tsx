@@ -31,10 +31,11 @@ import Collapsible, {
   COLLAPSIBLE_EXIT_DURATION,
   ResponsiveCollapsible,
   usePresence,
-} from "@/components/Collapsible";
+} from "@/components/animations/Collapsible";
 import Sidebar from "@/components/Sidebar";
 import { SearchIcon, TimerIcon } from "@/components/Icons";
 import type { RootState } from "@/store";
+import Fade from "@/components/animations/fade";
 
 const ENGINES: Record<string, string> = {
   google: "https://www.google.com/search?q=",
@@ -238,9 +239,9 @@ export default function App() {
 
       {motivationMounted && (
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-16 sm:pb-6">
-          <ResponsiveCollapsible open={motivationVisible} className="pointer-events-auto w-full max-w-xl ntp-shadow">
+          <Fade open={motivationVisible} className="pointer-events-auto w-full max-w-xl ntp-shadow">
             <MotivationWidget />
-          </ResponsiveCollapsible>
+          </Fade>
         </div>
       )}
 

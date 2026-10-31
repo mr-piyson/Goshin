@@ -439,3 +439,24 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+
+/* The element with `backdrop-filter` is the one that animates its own opacity. */
+[data-fade-state] .glass {
+  opacity: 0;
+}
+
+/* Only enable transitions after the first frame (avoids a flash on mount). */
+[data-fade-ready][data-fade-state] .glass {
+  transition: opacity var(--fade-close, 260ms) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-fade-ready][data-fade-state='open'] .glass {
+  opacity: 1;
+  transition-duration: var(--fade-open, 200ms);
+}
+
+[data-fade-reduced] .glass {
+  transition-duration: 0ms !important;
+}
