@@ -59,7 +59,7 @@ export default function CornerDock({ onOpenBackground, onOpenMore, onOpenSetting
         </div>
       )}
 
-      <div className="glass flex items-center gap-1 rounded-2xl p-1">
+      <div className="glass flex items-center gap-1 rounded-2xl p-1 opacity-80 hover:opacity-100 transition-all ease-in">
         <button type="button" className={`dock-btn ${open ? "ui-btn-active" : ""}`} title="Widgets visibility" aria-label="Widgets visibility" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
           <SlidersIcon className="h-[18px] w-[18px]" />
         </button>

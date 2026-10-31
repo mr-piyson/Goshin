@@ -211,8 +211,8 @@ const MotivationWidget = memo(function MotivationWidget({
             {current.text}
           </p>
 
-          <span className="mt-2 text-sm text-gray-500 font-medium">
-            — {current.author}
+          <span className="mt-2 text-sm text-text/75 font-medium">
+            {current.author}
           </span>
         </motion.div>
       </AnimatePresence>
