@@ -1,10 +1,4 @@
-
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import {
   motion,
@@ -12,12 +6,34 @@ import {
   type Variants,
 } from "motion/react";
 
+/** Width expand/collapse duration (ms). */
 const OUTER_DURATION = 280;
+
+/** Content fade + scale duration (ms). */
 const CONTENT_DURATION = 180;
+
+/**
+ * How far into the content's *exit* animation the width collapse starts.
+ *
+ *   1  -> old behaviour: content fully disappears, *then* the container
+ *         collapses (strictly sequential, slow).
+ *   0  -> both start at the same time.
+ * 0.5  -> the container starts collapsing while the content is still
+ *         fading/scaling out, which is what we want.
+ */
+const EXIT_OVERLAP = 0.5;
+
+/** ms the width collapse is delayed while exiting. */
+const CONTENT_EXIT_LEAD = CONTENT_DURATION * EXIT_OVERLAP; // 90ms
+
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-export const COLLAPSIBLE_EXIT_DURATION =
-  OUTER_DURATION + CONTENT_DURATION;
+/**
+ * Total time from `open: false` to fully collapsed (ms).
+ * NOTE: this is *not* CONTENT + OUTER anymore, because the two
+ * animations now overlap.
+ */
+export const COLLAPSIBLE_EXIT_DURATION = CONTENT_EXIT_LEAD + OUTER_DURATION;
 
 export function usePresence(
   open: boolean,
@@ -69,7 +85,7 @@ interface AnimatedCollapsibleProps
 function AnimatedCollapsible({
   open,
   width,
-  duration,
+  duration = OUTER_DURATION,
   className,
   children,
   initialOpen,
@@ -81,6 +97,9 @@ function AnimatedCollapsible({
   const contentDuration = prefersReducedMotion
     ? 0
     : CONTENT_DURATION / 1000;
+
+  // Same overlap, expressed in seconds and reduced-motion aware.
+  const contentExitLead = contentDuration * EXIT_OVERLAP;
 
   const containerVariants: Variants = {
     open: {
@@ -98,11 +117,13 @@ function AnimatedCollapsible({
     closed: {
       width: 0,
       transition: {
-        // Hide content first, then shrink the container.
-        when: "afterChildren",
+        // The content starts fading/scaling out immediately, and the
+        // width collapse kicks in `contentExitLead` later — i.e. the
+        // two animations overlap instead of running back-to-back.
         width: {
           duration: outerDuration,
           ease: EASE,
+          delay: contentExitLead,
         },
       },
     },
@@ -158,6 +179,13 @@ function AnimatedCollapsible({
       style={{
         minWidth: 0,
         flex: "0 0 auto",
+        // Center the fixed-width inner box inside the shrinking window so
+        // the content visually collapses towards the center from both
+        // sides, instead of being clipped only on the right edge.
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "stretch",
+        overflow: "hidden",
       }}
     >
       <div
@@ -165,6 +193,7 @@ function AnimatedCollapsible({
         style={{
           width,
           minWidth: width,
+          flex: "0 0 auto",
           height: "100%",
         }}
       >
@@ -172,6 +201,7 @@ function AnimatedCollapsible({
           className="collapse-x_content"
           variants={contentVariants}
           initial={initialOpen ? "open" : "closed"}
+          style={{ transformOrigin: "center center" }}
         >
           {children}
         </motion.div>
