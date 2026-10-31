@@ -1,0 +1,74 @@
+<!doctype html><html lang="en"><head><script defer="defer" src="assets/autofocus.js"></script><style>html, body {
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        overscroll-behavior: none;
+        transition: background-color 0.15s cubic-bezier(0, 0.4, 0.6, 1);
+      }
+
+      .mg-app, .mg-bg {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+      }
+
+      .mg-bg {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+      }
+
+      .mg-bg_content {
+        z-index: 2;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      .mg-bg_element {
+        object-fit: cover;
+        width: 100vw;
+        height: 100vh;
+        background-size: cover;
+        background-repeat: no-repeat no-repeat;
+        background-position: center center;
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+
+      .mg-bg_logo {
+        opacity: 0;
+        z-index: 1;
+        transition: fill 0.15s cubic-bezier(0, 0.4, 0.6, 1);
+        animation: show_logo 500ms ease-in 1s 1 forwards;
+      }
+
+      @keyframes show_logo { from { opacity: 0; } to { opacity: 1 }  }
+
+      @media (prefers-color-scheme: light) {
+        body {
+          background-color: #E1E2E2;
+        }
+
+        .mg-bg_logo {
+          fill: rgba(21, 27, 30, 0.10);
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #2F373B;
+        }
+
+        .mg-bg_logo {
+          fill: rgba(255, 255, 255, 0.10);
+        }
+      }</style><link rel="preload" href="assets/fonts/Inter/Inter-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/Inter/Inter-cyrillic.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/Manrope/Manrope-latin.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/Manrope/Manrope-cyrillic.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="assets/styles/fonts.css"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Manganum New Tab</title><script defer="defer" src="assets/content-locales.js?b883d7b0b2f888b83707"></script><script defer="defer" src="assets/content-vendors.js?17f6c57e061347d0f608"></script><script defer="defer" src="assets/content-ntp.js?fc94a4175fc295479d72"></script><script defer="defer" src="assets/content-components.js?8b53cee9584b10eeb61f"></script><script defer="defer" src="assets/content-containers.js?da7766375cbc170fa47c"></script><script defer="defer" src="assets/ntp.js?98882a6a37abb5e8c730"></script><link href="assets/ntp.css?0b21fc1fefabce965636" rel="stylesheet"></head><body class="mg-theme mg-theme_init"><noscript><strong>We're sorry but Manganum New Tab doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id="mg-bg" class="mg-bg"><svg width="80" height="80" viewBox="0 0 240 240" fill="#9966CC" xmlns="http://www.w3.org/2000/svg" class="mg-bg_logo"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 32C0 14.3269 14.3269 0 32 0H208C225.673 0 240 14.3269 240 32V208C240 225.673 225.673 240 208 240H32C14.3269 240 0 225.673 0 208V32ZM32 16C23.1634 16 16 23.1634 16 32V208C16 216.837 23.1634 224 32 224H208C216.837 224 224 216.837 224 208V32C224 23.1634 216.837 16 208 16H32Z"/><path d="M32 208H45.2993V153.517L71.2507 208H76.9L102.91 153.517V208H116.151V123H103.381L74.0754 183.208L44.7697 123H32V208Z"/><path d="M132.565 208H146.924V175.24C146.924 170.084 147.65 166.11 149.101 163.316C150.592 160.483 152.475 158.535 154.75 157.472C157.065 156.37 159.419 155.819 161.812 155.819C165.186 155.819 167.873 156.567 169.874 158.063C171.875 159.519 173.346 161.388 174.288 163.67C175.268 165.913 175.896 168.255 176.171 170.694C176.484 173.134 176.641 175.338 176.641 177.306V208H191V172.406C191 170.911 190.863 168.924 190.588 166.444C190.353 163.965 189.803 161.348 188.94 158.594C188.077 155.839 186.743 153.242 184.939 150.802C183.134 148.323 180.682 146.316 177.583 144.781C174.523 143.207 170.659 142.42 165.99 142.42C161.4 142.42 157.359 143.227 153.868 144.84C150.415 146.414 147.532 148.579 145.217 151.333V144.25H132.565V208Z"/><g opacity="0.5"><path d="M32 60.3813H51.2391V55.9927H39.2414L46.4051 49.6707C47.4664 48.7427 48.3529 47.8984 49.0648 47.138C49.7895 46.3647 50.3331 45.5333 50.6955 44.644C51.0579 43.7418 51.2391 42.6269 51.2391 41.2993C51.2391 39.482 50.8249 37.8773 49.9966 36.4853C49.1812 35.0804 48.0682 33.9849 46.6574 33.1987C45.2467 32.3996 43.6418 32 41.8428 32C39.9144 32 38.2124 32.3802 36.737 33.1407C35.2615 33.9011 34.1096 34.9709 33.2813 36.35C32.453 37.7291 32.0388 39.3467 32.0388 41.2027H36.8535C36.8276 40.352 37.0217 39.5593 37.4359 38.8247C37.85 38.09 38.426 37.5036 39.1637 37.0653C39.9144 36.6142 40.7751 36.3887 41.7457 36.3887C43.1306 36.3887 44.2566 36.8527 45.1237 37.7807C46.0038 38.6958 46.4439 39.8493 46.4439 41.2413C46.4439 41.9244 46.2562 42.6333 45.8809 43.368C45.5185 44.1027 44.8778 44.8824 43.9589 45.7073L32 56.3213V60.3813Z"/><path d="M64.196 61C65.9562 61 67.574 60.5811 69.0495 59.7433C70.5379 58.9056 71.7351 57.7842 72.641 56.3793C73.547 54.9616 74 53.3827 74 51.6427C74 49.9027 73.6117 48.3496 72.8352 46.9833C72.0716 45.6042 71.0103 44.5216 69.6513 43.7353C68.3053 42.9491 66.7586 42.556 65.0114 42.556C64.2996 42.556 63.5618 42.6591 62.7982 42.8653C62.0476 43.0716 61.3357 43.3809 60.6627 43.7933L61.0898 36.9493H72.1169V32.58H56.9352L56.081 47.312L60.0803 48.588C60.4556 48.1498 60.9927 47.7373 61.6916 47.3507C62.4035 46.964 63.2965 46.7707 64.3707 46.7707C65.2638 46.7707 66.0856 46.9898 66.8363 47.428C67.587 47.8662 68.1823 48.4527 68.6224 49.1873C69.0754 49.922 69.3019 50.7404 69.3019 51.6427C69.3019 52.532 69.0818 53.3504 68.6418 54.098C68.2017 54.8327 67.6064 55.4256 66.8557 55.8767C66.118 56.3149 65.2897 56.534 64.3707 56.534C63.3224 56.534 62.3388 56.2118 61.4198 55.5673C60.5139 54.91 59.9185 54.0207 59.6338 52.8993L55.1298 54.098C55.518 55.4642 56.1522 56.6693 57.0323 57.7133C57.9253 58.7444 58.9866 59.55 60.2162 60.13C61.4587 60.71 62.7853 61 64.196 61Z"/></g></svg><div class="mg-bg_content"></div></div></body></html>

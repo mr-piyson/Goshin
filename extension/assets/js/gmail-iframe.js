@@ -1,0 +1,1 @@
+document.addEventListener("DOMContentLoaded",(()=>{DarkReader.setFetchMethod((()=>new Response("",{status:200})));"dark"===document.body.getAttribute("data-theme")&&DarkReader.enable({darkSchemeBackgroundColor:"#151B1E",darkSchemeTextColor:"rgba(255, 255, 255, 0.75)",brightness:100,contrast:100,sepia:0})}));

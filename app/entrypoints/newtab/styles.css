@@ -1,0 +1,425 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fonts (same files as extension/assets/fonts) --------------------------- */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('/fonts/Inter/Inter-cyrillic-ext.woff2') format('woff2');
+  unicode-range: u+0460-052f, u+1c80-1c88, u+20b4, u+2de0-2dff, u+a640-a69f, u+fe2e-fe2f;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('/fonts/Inter/Inter-cyrillic.woff2') format('woff2');
+  unicode-range: u+0400-045f, u+0490-0491, u+04b0-04b1, u+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('/fonts/Inter/Inter-greek-ext.woff2') format('woff2');
+  unicode-range: u+1f??;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('/fonts/Inter/Inter-greek.woff2') format('woff2');
+  unicode-range: u+0370-03ff;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('/fonts/Inter/Inter-vietnamese.woff2') format('woff2');
+  unicode-range: u+0102-0103, u+0110-0111, u+0128-0129, u+0168-0169, u+01a0-01a1, u+01af-01b0, u+1ea0-1ef9, u+20ab;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('/fonts/Inter/Inter-latin-ext.woff2') format('woff2');
+  unicode-range: u+0100-024f, u+0259, u+1e??, u+2020, u+20a0-20ab, u+20ad-20cf, u+2113, u+2c60-2c7f, u+a720-a7ff;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('/fonts/Inter/Inter-latin.woff2') format('woff2');
+  unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da, u+02dc, u+2000-206f, u+2074, u+20ac, u+2122, u+2191, u+2193, u+2212, u+2215, u+feff, u+fffd;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: block;
+  src: url('/fonts/Manrope/Manrope-cyrillic.woff2') format('woff2');
+  unicode-range: u+0400-045f, u+0490-0491, u+04b0-04b1, u+2116;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: block;
+  src: url('/fonts/Manrope/Manrope-greek.woff2') format('woff2');
+  unicode-range: u+0370-03ff;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: block;
+  src: url('/fonts/Manrope/Manrope-latin-ext.woff2') format('woff2');
+  unicode-range: u+0100-024f, u+0259, u+1e??, u+2020, u+20a0-20ab, u+20ad-20cf, u+2113, u+2c60-2c7f, u+a720-a7ff;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: block;
+  src: url('/fonts/Manrope/Manrope-latin.woff2') format('woff2');
+  unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da, u+02dc, u+2000-206f, u+2074, u+20ac, u+2122, u+2191, u+2193, u+2212, u+2215, u+feff, u+fffd;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.4);
+}
+
+.theme-dark {
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.66);
+  --surface: rgba(255, 255, 255, 0.09);
+  --surface-strong: rgba(255, 255, 255, 0.18);
+  --field: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.16);
+  --panel: rgba(17, 19, 28, 0.88);
+  --accent: rgba(139, 92, 246, 0.5);
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.32);
+  color-scheme: dark;
+}
+
+.theme-light {
+  --text: #101828;
+  --muted: rgba(16, 24, 40, 0.62);
+  --surface: rgba(255, 255, 255, 0.48);
+  --surface-strong: rgba(255, 255, 255, 0.74);
+  --field: rgba(255, 255, 255, 0.56);
+  --border: rgba(16, 24, 40, 0.14);
+  --panel: rgba(255, 255, 255, 0.92);
+  --accent: rgba(139, 92, 246, 0.22);
+  --shadow: 0 18px 44px rgba(15, 23, 42, 0.18);
+  color-scheme: light;
+}
+
+.ntp-root {
+  position: relative;
+  color: var(--text);
+  background: #0b0f14;
+}
+
+/* Background layer ------------------------------------------------------- */
+.ntp-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  object-fit: cover;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.ntp-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.theme-dark .ntp-scrim {
+  background:
+    radial-gradient(1200px 600px at 50% 0%, rgba(0, 0, 0, 0.12), transparent 70%),
+    linear-gradient(180deg, rgba(5, 8, 14, 0.52), rgba(5, 8, 14, 0.16) 38%, rgba(5, 8, 14, 0.62));
+}
+
+.theme-light .ntp-scrim {
+  background:
+    radial-gradient(1200px 600px at 50% 0%, rgba(255, 255, 255, 0.4), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.14) 38%, rgba(255, 255, 255, 0.58));
+}
+
+/* Surfaces --------------------------------------------------------------- */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+}
+
+.panel-backdrop {
+  background: rgba(3, 6, 15, 0.36);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+.panel-surface {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.28);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  backdrop-filter: blur(28px) saturate(150%);
+}
+
+.ui-muted {
+  color: var(--muted);
+}
+
+.ntp-shadow {
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.38);
+}
+
+.theme-light .ntp-shadow {
+  text-shadow: 0 1px 20px rgba(255, 255, 255, 0.7);
+}
+
+.ui-field {
+  background: var(--field);
+}
+
+.ui-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.ui-tile:hover {
+  background: var(--surface-strong);
+}
+
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.ui-btn:hover {
+  background: var(--surface-strong);
+}
+
+.ui-btn-active {
+  background: var(--accent);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.35);
+}
+
+.ui-input {
+  background: var(--field);
+  border: 1px solid var(--border);
+  color: var(--text);
+  outline: none;
+}
+
+.ui-input::placeholder {
+  color: var(--muted);
+}
+
+.ui-input:focus {
+  border-color: rgba(167, 139, 250, 0.7);
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.25rem;
+  width: 2.25rem;
+  border-radius: 9999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: var(--surface-strong);
+  transform: translateY(-1px);
+}
+
+.dock-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  width: 2rem;
+  border-radius: 0.5rem;
+  color: var(--text);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.dock-btn:hover {
+  background: var(--surface-strong);
+}
+
+.dock-btn:active {
+  transform: scale(0.92);
+}
+
+.app-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.85), rgba(56, 189, 248, 0.8));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+/* Widget collapse / reveal ----------------------------------------------- */
+.collapse-x {
+  flex: 0 0 auto;
+  overflow: hidden;
+  transition-property: width;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.collapse-x_inner {
+  height: 100%;
+}
+
+.collapse-x_content {
+  height: 100%;
+  opacity: 0;
+  transform: scale(0.82);
+  transform-origin: right center;
+  transition-property: transform, opacity;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease;
+  transition-duration: 280ms, 180ms;
+}
+
+.collapse-x_content[data-open] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Launchpad -------------------------------------------------------------- */
+.launch-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 1rem;
+  padding: 0.5rem 0.25rem;
+  color: var(--text);
+  cursor: grab;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.launch-tile:hover {
+  background: var(--surface);
+}
+
+.launch-tile:active {
+  cursor: grabbing;
+}
+
+.launch-tile--dragging {
+  opacity: 0.65;
+  z-index: 10;
+}
+
+.launch-tile--add {
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.launch-tile--add:hover {
+  opacity: 1;
+}
+
+/* Scrollbars ------------------------------------------------------------- */
+.ntp-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 148, 160, 0.4) transparent;
+}
+
+.ntp-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.ntp-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ntp-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 148, 160, 0.35);
+  border-radius: 9999px;
+}
+
+.ntp-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 148, 160, 0.55);
+}
+
+@keyframes panel-in {
+  from {
+    transform: translateX(28px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+*:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

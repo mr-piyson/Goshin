@@ -1,0 +1,1 @@
+chrome.storage.local.get(["search","sidebar"],(a=>{a&&a.search&&(a.sidebar&&"launchpad"!==a.sidebar.ahead||""===location.search&&!0===a.search.autofocus&&(location.search="?focus"))}));
