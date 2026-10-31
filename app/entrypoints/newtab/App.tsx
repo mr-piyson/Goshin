@@ -27,7 +27,11 @@ import LifeTimerWidget from "@/components/LifeTimerWidget";
 import Panel from "@/components/Panel";
 import MorePanel, { type AppItem } from "@/components/MorePanel";
 import CornerDock from "@/components/CornerDock";
-import Collapsible, { ResponsiveCollapsible, usePresence } from "@/components/Collapsible";
+import Collapsible, {
+  COLLAPSIBLE_EXIT_DURATION,
+  ResponsiveCollapsible,
+  usePresence,
+} from "@/components/Collapsible";
 import Sidebar from "@/components/Sidebar";
 import { SearchIcon, TimerIcon } from "@/components/Icons";
 import type { RootState } from "@/store";
@@ -189,8 +193,8 @@ export default function App() {
   const weatherVisible = settings.widgets.weather !== false;
   const timeVisible = settings.widgets.time !== false;
   const motivationVisible = settings.widgets.motivation !== false;
-  const cornerMounted = usePresence(weatherVisible || timeVisible, 320);
-  const motivationMounted = usePresence(motivationVisible, 320);
+  const cornerMounted = usePresence(weatherVisible || timeVisible, COLLAPSIBLE_EXIT_DURATION);
+  const motivationMounted = usePresence(motivationVisible, COLLAPSIBLE_EXIT_DURATION);
 
   return (
     <div className={`ntp-root theme-${theme} flex h-screen w-screen flex-col overflow-hidden`}>

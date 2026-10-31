@@ -339,11 +339,10 @@ body {
 }
 
 /* Widget collapse / reveal ----------------------------------------------- */
+
 .collapse-x {
   flex: 0 0 auto;
   overflow: hidden;
-  transition-property: width;
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .collapse-x_inner {
@@ -352,18 +351,8 @@ body {
 
 .collapse-x_content {
   height: 100%;
-  opacity: 0;
-  transform: scale(0.82);
-  transform-origin: right center;
-  transition-property: transform, opacity;
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease;
-  transition-duration: 280ms, 180ms;
 }
 
-.collapse-x_content[data-open] {
-  opacity: 1;
-  transform: scale(1);
-}
 
 /* Launchpad -------------------------------------------------------------- */
 .launch-tile {
