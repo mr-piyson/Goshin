@@ -199,23 +199,29 @@ export default function App() {
       {/* Collapsible Sidebar on screen edge with all apps */}
       <Sidebar onOpenSettingsModal={() => setPanel("settings")} />
 
-      {cornerMounted && (
-        <div className="m-2 fixed right-0 top-0 z-30">
-          <div className={`glass flex h-[72px] items-stretch overflow-hidden rounded-xl transition-[padding] duration-300 ${weatherVisible || timeVisible ? "px-1" : "px-0"}`}>
-            <Collapsible open={weatherVisible} width={113}>
-              <WeatherWidget />
-            </Collapsible>
-            <Collapsible open={weatherVisible && timeVisible} width={9}>
-              <div className="flex h-full items-center justify-center">
-                <div className="h-4 w-px bg-[color:var(--border)]" />
-              </div>
-            </Collapsible>
-            <Collapsible open={timeVisible} width={114}>
-              <TimeWidget />
-            </Collapsible>
-          </div>
+    {hydrated && (
+  <div className="m-2 fixed right-0 top-0 z-30">
+    <div
+      className={`glass flex h-[72px] items-stretch overflow-hidden rounded-xl transition-[padding] duration-300 ${
+        weatherVisible || timeVisible ? "px-1" : "px-0"
+      }`}
+    >
+      <Collapsible open={weatherVisible} width={113}>
+        <WeatherWidget />
+      </Collapsible>
+
+      <Collapsible open={weatherVisible && timeVisible} width={9}>
+        <div className="flex h-full items-center justify-center">
+          <div className="h-4 w-px bg-[color:var(--border)]" />
         </div>
-      )}
+      </Collapsible>
+
+      <Collapsible open={timeVisible} width={114}>
+        <TimeWidget />
+      </Collapsible>
+    </div>
+  </div>
+)}
 
       <main className={`ntp-scroll relative z-10 min-h-0 flex-1 overflow-y-auto transition-[padding] duration-300 ${settings.sidebarPosition === "left" && (settings.sidebarPinned ?? true) ? "pl-12" : ""}`}>
         <div className="mx-auto flex min-h-[calc(100vh-9rem)] w-full max-w-6xl flex-col items-center justify-center gap-7 px-4 pb-24 pt-24 sm:px-6">
