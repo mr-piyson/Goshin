@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { browser } from "wxt/browser";
-import { setQuery } from "@/store/searchSlice";
 import { setAll as setSettings } from "@/store/settingsSlice";
 import { setOrder } from "@/store/widgetOrderSlice";
 import { setAll as setLaunchpad } from "@/store/launchpadSlice";
@@ -20,29 +19,24 @@ import HistoryWidget from "@/components/HistoryWidget";
 import CalendarWidget from "@/components/CalendarWidget";
 import GmailWidget from "@/components/GmailWidget";
 import Account from "@/components/Account";
-import TicTacToe from "@/components/TicTacToe";
 import Onboarding from "@/components/Onboarding";
 import TimeWidget from "@/components/TimeWidget";
-import MotivationWidget from "@/components/MotivationWidget";
+import MotivationWidget from "@/components/widgets/MotivationWidget";
 import LifeTimerWidget from "@/components/LifeTimerWidget";
 import Panel from "@/components/Panel";
 import MorePanel, { type AppItem } from "@/components/MorePanel";
 import CornerDock from "@/components/CornerDock";
 import Collapsible, {
   COLLAPSIBLE_EXIT_DURATION,
-  ResponsiveCollapsible,
   usePresence,
 } from "@/components/animations/Collapsible";
 import Sidebar from "@/components/Sidebar";
 import { SearchIcon, TimerIcon } from "@/components/Icons";
 import type { RootState } from "@/store";
 import Fade from "@/components/animations/fade";
+import SearchWidget from "@/components/widgets/SearchWidget";
 
-const ENGINES: Record<string, string> = {
-  google: "https://www.google.com/search?q=",
-  bing: "https://www.bing.com/search?q=",
-  duckduckgo: "https://duckduckgo.com/?q=",
-};
+
 
 interface AppView {
   title: string;
@@ -57,7 +51,6 @@ const APP_VIEWS: Record<string, AppView> = {
   history: { title: "Recent history", render: () => <HistoryWidget /> },
   topSites: { title: "Top sites", render: () => <TopSites /> },
   translator: { title: "Translator", render: () => <Translator /> },
-  ticTacToe: { title: "Tic-tac-toe", render: () => <TicTacToe /> },
   lifeTimer: { title: "Life timer", render: () => <LifeTimerWidget /> },
   account: { title: "Account & sync", render: () => <Account /> },
 };
@@ -70,7 +63,6 @@ const MORE_APPS: AppItem[] = [
   { id: "history", label: "History", hint: "Recently visited pages" },
   { id: "topSites", label: "Top sites", hint: "Your most visited sites" },
   { id: "translator", label: "Translator", hint: "Translate text to English" },
-  { id: "ticTacToe", label: "Tic-tac-toe", hint: "Take a short break" },
   { id: "lifeTimer", label: "Life timer", hint: "Years lived and years left" },
 ];
 
@@ -81,7 +73,7 @@ const PANEL_WIDTH: Record<string, string> = {
   more: "max-w-sm",
 };
 
-type PanelId = "settings" | "background" | "more" | "account" | "notes" | "tasks" | "calendar" | "gmail" | "history" | "topSites" | "translator" | "ticTacToe" | "lifeTimer";
+type PanelId = "settings" | "background" | "more" | "account" | "notes" | "tasks" | "calendar" | "gmail" | "history" | "topSites" | "translator" | "lifeTimer";
 
 function usePrefersDark() {
   const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -182,13 +174,7 @@ export default function App() {
     [openFocusTime, openSidePanel],
   );
 
-  const submitSearch = (event: React.FormEvent) => {
-    event.preventDefault();
-    const value = query.trim();
-    if (!value) return;
-    const base = ENGINES[settings.searchEngine] ?? ENGINES.google;
-    window.location.href = `${base}${encodeURIComponent(value)}`;
-  };
+
 
   const look = resolveBackground(background.current, background.custom);
   const appView = panel && APP_VIEWS[panel] ? APP_VIEWS[panel] : null;
@@ -225,15 +211,7 @@ export default function App() {
 
       <main className={`ntp-scroll relative z-10 min-h-0 flex-1 overflow-y-auto transition-[padding] duration-300 ${settings.sidebarPosition === "left" && (settings.sidebarPinned ?? true) ? "pl-12" : ""}`}>
         <div className="mx-auto flex min-h-[calc(100vh-9rem)] w-full max-w-6xl flex-col items-center justify-center gap-7 px-4 pb-24 pt-24 sm:px-6">
-          {settings.widgets.search !== false && (
-            <form onSubmit={submitSearch} className="w-full max-w-2xl">
-              <div className="glass flex items-center gap-3 rounded-full px-5 py-3">
-                <SearchIcon className="h-5 w-5 shrink-0 ui-muted" />
-                <input ref={searchRef} value={query} onChange={(event) => dispatch(setQuery(event.target.value))} placeholder="Search the web…" aria-label="Search the web" spellCheck={false} className="min-w-0 flex-1 bg-transparent px-0 py-0 text-base outline-none placeholder:text-[color:var(--muted)]" />
-                <kbd className="hidden rounded-md border border-[color:var(--border)] px-1.5 py-0.5 text-[10px] ui-muted sm:block">/</kbd>
-              </div>
-            </form>
-          )}
+            <SearchWidget show={settings.widgets.search !== false} />
         </div>
       </main>
 

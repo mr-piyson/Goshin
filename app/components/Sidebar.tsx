@@ -8,7 +8,6 @@ import Tasks from './Tasks';
 import Notes from './Notes';
 import HistoryWidget from './HistoryWidget';
 import Translator from './Translator';
-import TicTacToe from './TicTacToe';
 import LifeTimerWidget from './LifeTimerWidget';
 import TopSites from './TopSites';
 import Account from './Account';
@@ -39,7 +38,6 @@ export type SidebarAppId =
   | 'notes'
   | 'history'
   | 'translator'
-  | 'ticTacToe'
   | 'lifeTimer'
   | 'topSites'
   | 'account'
@@ -95,13 +93,6 @@ const APPS: AppDefinition[] = [
     subtitle: 'Quick text translation',
     Icon: TranslateIcon,
     render: () => <Translator />,
-  },
-  {
-    id: 'ticTacToe',
-    label: 'Tic-tac-toe',
-    subtitle: 'Short mental break',
-    Icon: GameIcon,
-    render: () => <TicTacToe />,
   },
   {
     id: 'lifeTimer',

@@ -12,7 +12,6 @@ const SIDEBAR_APP_OPTIONS = [
   { id: "notes", label: "Notes", hint: "Quick thoughts & scratchpad", Icon: NotesIcon },
   { id: "history", label: "Tabs & History", hint: "Recently closed & browsing tabs", Icon: HistoryIcon },
   { id: "translator", label: "Translator", hint: "Translate text instantly", Icon: TranslateIcon },
-  { id: "ticTacToe", label: "Tic-tac-toe", hint: "Quick break game", Icon: GameIcon },
   { id: "lifeTimer", label: "Life timer", hint: "Years lived & years left", Icon: HourglassIcon },
   { id: "topSites", label: "Top sites", hint: "Most visited shortcuts", Icon: GlobeIcon },
 ];
