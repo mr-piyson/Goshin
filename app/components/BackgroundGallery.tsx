@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { dislike, resetDisliked, setCurrent, setCustom } from '@/store/backgroundSlice';
 import { GROUP_LABELS, SYSTEM_BACKGROUNDS, type BackgroundGroup } from '@/lib/backgrounds';
 import { CheckIcon, ImageIcon, TrashIcon, UploadIcon } from './Icons';
+import LoopingVideo from './LoopingVideo';
 import type { RootState, AppDispatch } from '@/store';
 
 type Tab = BackgroundGroup | 'custom';
@@ -82,6 +83,7 @@ export default function BackgroundGallery() {
                       }`}
                       style={{ background: item.css }}
                     >
+                      {item.video && <LoopingVideo src={item.video} className="absolute inset-0" />}
                       <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-2 pb-1.5 pt-5 text-left text-[11px] font-medium text-white">
                         {item.name}
                       </span>
@@ -160,7 +162,7 @@ export default function BackgroundGallery() {
           {bg.custom && !customDisliked ? (
             <div className="relative overflow-hidden rounded-xl border border-[color:var(--border)]">
               {bg.custom.startsWith('data:video') ? (
-                <video src={bg.custom} muted loop autoPlay playsInline className="h-40 w-full object-cover" />
+                <LoopingVideo src={bg.custom} className="relative h-40 w-full" />
               ) : (
                 <img src={bg.custom} alt="Custom background" className="h-40 w-full object-cover" />
               )}

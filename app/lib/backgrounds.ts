@@ -6,6 +6,7 @@ export interface SystemBackground {
   group: BackgroundGroup;
   /** CSS background value (images use url(), gradients use linear-gradient). */
   css: string;
+  video?: string;
 }
 
 export const GROUP_LABELS: Record<BackgroundGroup, string> = {
@@ -20,6 +21,7 @@ export const SYSTEM_BACKGROUNDS: SystemBackground[] = [
   { id: 'bg-4', name: 'Forest', group: 'cover', css: "url('/backgrounds/image-4.jpg') center/cover no-repeat" },
   { id: 'bg-5', name: 'Field', group: 'cover', css: "url('/backgrounds/image-5.jpg') center/cover no-repeat" },
   { id: 'bg-6', name: 'Night sky', group: 'cover', css: "url('/backgrounds/image-6.jpg') center/cover no-repeat" },
+  { id: 'bg-video', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10070-fhd.mp4' },
   { id: 'g1', name: 'Sunset', group: 'gradients', css: 'linear-gradient(135deg,#ff9a9e,#fecfef)' },
   { id: 'g2', name: 'Ocean', group: 'gradients', css: 'linear-gradient(135deg,#a1c4fd,#c2e9fb)' },
   { id: 'g3', name: 'Midnight', group: 'gradients', css: 'linear-gradient(135deg,#0f2027,#2c5364)' },
@@ -41,6 +43,7 @@ export function resolveBackground(current: string, custom?: string): BackgroundL
   }
   const item = SYSTEM_BACKGROUNDS.find((b) => b.id === current);
   if (item) {
+    if (item.video) return { kind: 'video', url: item.video };
     return current.startsWith('g')
       ? { kind: 'gradient', css: item.css }
       : { kind: 'image', css: item.css };

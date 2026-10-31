@@ -12,6 +12,7 @@ import WeatherWidget from "@/components/WeatherWidget";
 import Notes from "@/components/Notes";
 import Tasks from "@/components/Tasks";
 import BackgroundGallery from "@/components/BackgroundGallery";
+import LoopingVideo from "@/components/LoopingVideo";
 import Settings from "@/components/Settings";
 import Translator from "@/components/Translator";
 import TopSites from "@/components/TopSites";
@@ -199,7 +200,7 @@ export default function App() {
 
   return (
     <div className={`ntp-root theme-${theme} flex h-screen w-screen flex-col overflow-hidden`}>
-      {look.kind === "video" ? <video className="ntp-bg" src={look.url} muted loop autoPlay playsInline aria-hidden="true" /> : <div className="ntp-bg" style={{ background: look.css }} aria-hidden="true" />}
+      {look.kind === "video" ? <LoopingVideo key={look.url} className="ntp-bg" src={look.url} /> : <div className="ntp-bg" style={{ background: look.css }} aria-hidden="true" />}
       <div className="ntp-scrim" aria-hidden="true" />
 
       {/* Collapsible Sidebar on screen edge with all apps */}
