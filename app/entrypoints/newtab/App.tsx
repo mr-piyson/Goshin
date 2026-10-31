@@ -8,7 +8,6 @@ import { setAll as setLaunchpad } from "@/store/launchpadSlice";
 import { setAll as setBackground } from "@/store/backgroundSlice";
 import { loadShortcuts } from "@/lib/storage";
 import { resolveBackground } from "@/lib/backgrounds";
-import Launchpad from "@/components/Launchpad";
 import WeatherWidget from "@/components/WeatherWidget";
 import Notes from "@/components/Notes";
 import Tasks from "@/components/Tasks";
@@ -229,12 +228,6 @@ export default function App() {
                 <kbd className="hidden rounded-md border border-[color:var(--border)] px-1.5 py-0.5 text-[10px] ui-muted sm:block">/</kbd>
               </div>
             </form>
-          )}
-
-          {settings.widgets.launchpad !== false && (
-            <section className="w-full max-w-4xl">
-              <Launchpad />
-            </section>
           )}
         </div>
       </main>
