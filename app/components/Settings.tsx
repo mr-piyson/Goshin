@@ -104,7 +104,7 @@ export default function Settings() {
                 key={app.id}
                 className={`ui-tile flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition ${
                   enabled
-                    ? "border-[color:var(--border)]"
+                    ? "border-accent/65"
                     : "border-transparent opacity-70 hover:opacity-100"
                 } hover:bg-[color:var(--surface-strong)]`}
               >
