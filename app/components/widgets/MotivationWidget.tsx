@@ -178,9 +178,9 @@ const MotivationWidget = memo(function MotivationWidget({
   ? { opacity: 0 }
   : { opacity: 0, y: 12, filter: "blur(6px)" };
 
-const enterTo = { opacity: 1, y: 0, filter: "blur(0px)" };
+  const enterTo = { opacity: 1, y: 0, filter: "blur(0px)" };
 
-const exitTo = reduceMotion
+  const exitTo = reduceMotion
   ? { opacity: 0 }
   : { opacity: 0, y: -10, filter: "blur(4px)" }
 
@@ -194,15 +194,7 @@ const exitTo = reduceMotion
           key={index}
           initial={enterFrom}
           animate={enterTo}
-          exit={
-            reduceMotion
-              ? { opacity: 0 }
-              : {
-                  opacity: 0,
-                  y: -10,
-                  filter: "blur(4px)",
-                }
-          }
+          exit={exitTo}
           transition={
             reduceMotion
               ? { duration: 0.1 }
