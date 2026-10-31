@@ -58,7 +58,7 @@ export default function SearchWidget({ show = false }: SearchWidgetProps) {
             placeholder="Search the web…"
             aria-label="Search the web"
             spellCheck={false}
-            className="min-w-0 flex-1 bg-transparent px-0 py-0 text-base outline-none placeholder:text-[color:var(--muted)]"
+            className=" min-w-0 flex-1 bg-transparent px-0 py-0 text-base outline-none placeholder:text-[color:var(--muted)]"
           />
           <kbd className="hidden rounded-md border border-[color:var(--border)] px-1.5 py-0.5 text-[10px] ui-muted sm:block">
             /
