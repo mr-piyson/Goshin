@@ -93,73 +93,44 @@ function AnimatedCollapsible({
   const rootRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
-  const outerDuration = prefersReducedMotion ? 0 : duration / 1000;
-  const contentDuration = prefersReducedMotion
-    ? 0
-    : CONTENT_DURATION / 1000;
+const outerDuration   = prefersReducedMotion ? 0 : duration / 1000;
+const contentDuration = prefersReducedMotion ? 0 : CONTENT_DURATION / 1000;
+const contentExitLead = contentDuration * EXIT_OVERLAP;   // 90 ms
+const openContentLead = outerDuration;                    // wait for width to expand
 
-  // Same overlap, expressed in seconds and reduced-motion aware.
-  const contentExitLead = contentDuration * EXIT_OVERLAP;
-
-  const containerVariants: Variants = {
-    open: {
-      width,
-      transition: {
-        // Expand first, then reveal content.
-        when: "beforeChildren",
-        width: {
-          duration: outerDuration,
-          ease: EASE,
-        },
-      },
+const containerVariants: Variants = {
+  open: {
+    width,
+    transition: { duration: outerDuration, ease: EASE },
+  },
+  closed: {
+    width: 0,
+    transition: {
+      duration: outerDuration,
+      ease: EASE,
+      delay: contentExitLead,           // width waits 90 ms while content already exits
     },
+  },
+};
 
-    closed: {
-      width: 0,
-      transition: {
-        // The content starts fading/scaling out immediately, and the
-        // width collapse kicks in `contentExitLead` later — i.e. the
-        // two animations overlap instead of running back-to-back.
-        width: {
-          duration: outerDuration,
-          ease: EASE,
-          delay: contentExitLead,
-        },
-      },
+const contentVariants: Variants = {
+  open: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      opacity: { duration: contentDuration, ease: "easeOut", delay: openContentLead },
+      scale:   { duration: contentDuration, ease: EASE,     delay: openContentLead },
     },
-  };
-
-  const contentVariants: Variants = {
-    open: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        opacity: {
-          duration: contentDuration,
-          ease: "easeOut",
-        },
-        scale: {
-          duration: contentDuration,
-          ease: EASE,
-        },
-      },
+  },
+  closed: {
+    opacity: 0,
+    scale: 0.82,
+    transition: {
+      opacity: { duration: contentDuration, ease: "easeIn" },
+      scale:   { duration: contentDuration, ease: EASE },
     },
-
-    closed: {
-      opacity: 0,
-      scale: 0.82,
-      transition: {
-        opacity: {
-          duration: contentDuration,
-          ease: "easeIn",
-        },
-        scale: {
-          duration: contentDuration,
-          ease: EASE,
-        },
-      },
-    },
-  };
+  },
+};
 
   // Prevent keyboard interaction while the component is closed.
   useEffect(() => {
@@ -201,6 +172,7 @@ function AnimatedCollapsible({
           className="collapse-x_content"
           variants={contentVariants}
           initial={initialOpen ? "open" : "closed"}
+          animate={open ? "open" : "closed"}  
           style={{ transformOrigin: "center center" }}
         >
           {children}
@@ -218,6 +190,9 @@ export default function Collapsible({
   className = "",
   children,
 }: CollapsibleProps) {
+
+  // Capture the initial value *once* and never update it.
+  const [initialOpen] = useState(open);
   // Do not render until persisted settings are loaded.
   if (!ready) return null;
 
@@ -227,7 +202,7 @@ export default function Collapsible({
       width={width}
       duration={duration}
       className={className}
-      initialOpen={open}
+      initialOpen={initialOpen}   // frozen → no more snap
     >
       {children}
     </AnimatedCollapsible>
