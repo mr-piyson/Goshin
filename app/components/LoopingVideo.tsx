@@ -14,7 +14,11 @@ export function shouldStartVideoCrossfade(duration: number, currentTime: number)
 }
 
 export function getVideoLayerOpacity(index: number, active: number, fadeTo: number | null): number {
-  return index === (fadeTo ?? active) ? 1 : 0;
+  return fadeTo !== null || index === active ? 1 : 0;
+}
+
+export function getVideoLayerZIndex(index: number, active: number, fadeTo: number | null): number {
+  return index === (fadeTo ?? active) ? 2 : 1;
 }
 
 interface LoopingVideoProps {
@@ -148,6 +152,7 @@ export default function LoopingVideo({ src, className }: LoopingVideoProps) {
           className="looping-video-layer"
           style={{
             opacity: getVideoLayerOpacity(index, active, fadeTo),
+            zIndex: getVideoLayerZIndex(index, active, fadeTo),
             transitionDuration: `${fadeDuration}s`,
           }}
           onTimeUpdate={() => handleTimeUpdate(index)}

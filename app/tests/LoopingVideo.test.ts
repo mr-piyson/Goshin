@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getVideoCrossfadeDuration,
   getVideoLayerOpacity,
+  getVideoLayerZIndex,
   shouldStartVideoCrossfade,
 } from "../components/LoopingVideo";
 
@@ -20,7 +21,9 @@ describe("video crossfade timing", () => {
   it("fades from the active video to the incoming video", () => {
     expect(getVideoLayerOpacity(0, 0, null)).toBe(1);
     expect(getVideoLayerOpacity(1, 0, null)).toBe(0);
-    expect(getVideoLayerOpacity(0, 0, 1)).toBe(0);
+    expect(getVideoLayerOpacity(0, 0, 1)).toBe(1);
     expect(getVideoLayerOpacity(1, 0, 1)).toBe(1);
+    expect(getVideoLayerZIndex(0, 0, 1)).toBe(1);
+    expect(getVideoLayerZIndex(1, 0, 1)).toBe(2);
   });
 });
