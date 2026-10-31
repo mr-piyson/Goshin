@@ -66,7 +66,7 @@ export default function WeatherWidget() {
     return (
       <div className="flex h-full w-full min-w-[64px] flex-col items-center justify-center px-2 text-center" title={err}>
         <WeatherIcon code={3} className="h-5 w-5 opacity-70" />
-        <span className="mt-1 font-title text-xl font-medium leading-none ui-muted">—</span>
+        <span className="mt-1 text-xl font-medium leading-none ui-muted">—</span>
       </div>
     );
   }
@@ -75,7 +75,7 @@ export default function WeatherWidget() {
     return (
       <div className="flex h-full w-full min-w-[64px] items-center justify-center gap-1.5 px-2" aria-label="Loading weather">
         <span className="h-4 w-4 animate-pulse rounded-full bg-[color:var(--surface-strong)]" />
-        <span className="font-title text-xl font-medium leading-none ui-muted">…</span>
+        <span className="text-xl font-medium leading-none ui-muted">…</span>
       </div>
     );
   }
@@ -87,7 +87,7 @@ export default function WeatherWidget() {
       title={w.city ? `${codeLabel(w.code)} in ${w.city}` : codeLabel(w.code)}
     >
       <WeatherIcon code={w.code} className="h-5 w-5 shrink-0" />
-      <span className="font-title text-xl font-medium leading-none tabular-nums">
+      <span className="text-xl font-medium leading-none tabular-nums">
         {temp}°{unit}
       </span>
     </div>

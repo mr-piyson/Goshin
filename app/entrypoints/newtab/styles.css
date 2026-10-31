@@ -139,6 +139,9 @@ body {
   --panel: rgba(17, 19, 28, 0.88);
   --accent: rgba(139, 92, 246, 0.5);
   --shadow: 0 18px 44px rgba(0, 0, 0, 0.32);
+  --glass-surface: rgba(21, 27, 30, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   color-scheme: dark;
 }
 
@@ -153,6 +156,9 @@ body {
   --panel: rgba(255, 255, 255, 0.92);
   --accent: rgba(139, 92, 246, 0.22);
   --shadow: 0 18px 44px rgba(15, 23, 42, 0.18);
+  --glass-surface: rgba(255, 255, 255, 0.5);
+  --glass-border: rgba(21, 27, 30, 0.1);
+  --glass-shadow: 0 1px 2px rgba(21, 27, 30, 0.15);
   color-scheme: light;
 }
 
@@ -189,11 +195,11 @@ body {
 
 /* Surfaces --------------------------------------------------------------- */
 .glass {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  backdrop-filter: blur(20px) saturate(140%);
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(150%);
 }
 
 .panel-backdrop {
