@@ -1,19 +1,114 @@
-import React, { useEffect, useState } from "react";
+
+import { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import dayjs from "dayjs";
 import type { RootState } from "@/store";
 
-export default function TimeWidget() {
-  const { timeFormat, showSeconds } = useSelector((s: RootState) => s.settings);
-  const [now, setNow] = useState(dayjs());
+const TIME_TRANSITION = {
+  duration: 0.3,
+  ease: [0.22, 1, 0.36, 1] as const,
+};
+
+const AnimatedTime = memo(function AnimatedTime({
+  value,
+  reduceMotion,
+}: {
+  value: string;
+  reduceMotion: boolean;
+}) {
+  return (
+    <div className="inline-flex items-center font-manrope text-xl font-medium leading-none tabular-nums">
+      {Array.from(value).map((char, index) => (
+        <span
+          key={index}
+          className="relative inline-grid overflow-hidden"
+        >
+          <AnimatePresence initial={false} mode="sync">
+            <motion.span
+              key={`${index}-${char}`}
+              initial={false}
+              animate={{
+                opacity: 1,
+                y: "0%",
+                filter: "blur(0px)",
+              }}
+              exit={
+                reduceMotion
+                  ? { opacity: 0 }
+                  : {
+                      opacity: 0,
+                      y: "-65%",
+                      filter: "blur(3px)",
+                    }
+              }
+              transition={
+                reduceMotion
+                  ? { duration: 0.1 }
+                  : TIME_TRANSITION
+              }
+              className="col-start-1 row-start-1 inline-block"
+            >
+              {char === " " ? "\u00A0" : char}
+            </motion.span>
+          </AnimatePresence>
+        </span>
+      ))}
+    </div>
+  );
+});
+
+function TimeWidget() {
+  const timeFormat = useSelector(
+    (s: RootState) => s.settings.timeFormat
+  );
+
+  const showSeconds = useSelector(
+    (s: RootState) => s.settings.showSeconds
+  );
+
+  const [now, setNow] = useState(() => Date.now());
   const [isActive, setIsActive] = useState(false);
 
-  useEffect(() => {
-    const t = window.setInterval(() => setNow(dayjs()), 1000);
-    return () => window.clearInterval(t);
-  }, []);
+  const reduceMotion = useReducedMotion();
 
-  const fmt = timeFormat === "12" ? (showSeconds ? "h:mm:ss A" : "h:mm A") : showSeconds ? "HH:mm:ss" : "HH:mm";
+  // Align updates with actual second/minute boundaries.
+  useEffect(() => {
+    let timer: number;
+
+    const tick = () => {
+      const current = Date.now();
+      setNow(current);
+
+      const delay = showSeconds
+        ? 1000 - (current % 1000)
+        : 60_000 - (current % 60_000);
+
+      timer = window.setTimeout(tick, delay);
+    };
+
+    const current = Date.now();
+
+    timer = window.setTimeout(
+      tick,
+      showSeconds
+        ? 1000 - (current % 1000)
+        : 60_000 - (current % 60_000)
+    );
+
+    return () => window.clearTimeout(timer);
+  }, [showSeconds]);
+
+  const fmt =
+    timeFormat === "12"
+      ? showSeconds
+        ? "h:mm:ss A"
+        : "h:mm A"
+      : showSeconds
+        ? "HH:mm:ss"
+        : "HH:mm";
+
+  const current = dayjs(now);
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center">
@@ -31,10 +126,18 @@ export default function TimeWidget() {
           ${isActive ? "bg-white/50" : ""}
         `}
       >
-        <div className="font-manrope text-xl font-medium leading-none tabular-nums">{now.format(fmt)}</div>
+        <AnimatedTime
+          key={fmt}
+          value={current.format(fmt)}
+          reduceMotion={!!reduceMotion}
+        />
 
-        <div className="mt-1.5 whitespace-nowrap text-sm font-normal leading-none ui-muted">{now.format("ddd, MMM D")}</div>
+        <div className="mt-1.5 whitespace-nowrap text-sm font-normal leading-none ui-muted">
+          {current.format("ddd, MMM D")}
+        </div>
       </button>
     </div>
   );
 }
+
+export default memo(TimeWidget);

@@ -1,4 +1,11 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+
 import {
   AnimatePresence,
   motion,
@@ -11,38 +18,57 @@ const OUTER_DURATION = 280;
 const CONTENT_DURATION = 180;
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-export const COLLAPSIBLE_EXIT_DURATION = Math.max(OUTER_DURATION, CONTENT_DURATION);
+export const COLLAPSIBLE_EXIT_DURATION = Math.max(
+  OUTER_DURATION,
+  CONTENT_DURATION
+);
 
-/** Keeps a node mounted long enough for its exit animation to finish. */
-export function usePresence(open: boolean, duration = COLLAPSIBLE_EXIT_DURATION) {
-  const [mounted, setMounted] = useState(open);
+export function usePresence(
+  open: boolean,
+  duration = COLLAPSIBLE_EXIT_DURATION,
+  enabled = true,
+) {
+  // Never mount before settings have finished loading.
+  const [mounted, setMounted] = useState(false);
+
   const prefersReducedMotion = useReducedMotion();
   const exitDuration = prefersReducedMotion ? 0 : duration;
 
   useEffect(() => {
+    if (!enabled) {
+      setMounted(false);
+      return;
+    }
+
     if (open) {
       setMounted(true);
       return;
     }
+
     if (!mounted) return;
 
-    const timer = window.setTimeout(() => setMounted(false), exitDuration);
+    const timer = window.setTimeout(() => {
+      setMounted(false);
+    }, exitDuration);
+
     return () => window.clearTimeout(timer);
-  }, [open, exitDuration, mounted]);
+  }, [open, enabled, exitDuration, mounted]);
 
   return mounted;
 }
 
 interface CollapsibleProps {
   open: boolean;
-  /** Width in pixels when fully expanded. */
   width: number;
   duration?: number;
   className?: string;
   children: React.ReactNode;
+
+  /** Set false until persisted settings have loaded. */
+  ready?: boolean;
 }
 
-interface AnimatedCollapsibleProps extends Omit<CollapsibleProps, 'open'> {
+interface AnimatedCollapsibleProps extends Omit<CollapsibleProps, 'open' | 'ready'> {
   duration: number;
 }
 
@@ -55,22 +81,31 @@ function AnimatedCollapsible({
   const rootRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
   const prefersReducedMotion = useReducedMotion();
+
   const outerDuration = prefersReducedMotion ? 0 : duration / 1000;
-  const contentDuration = prefersReducedMotion ? 0 : CONTENT_DURATION / 1000;
+  const contentDuration = prefersReducedMotion
+    ? 0
+    : CONTENT_DURATION / 1000;
 
   const containerVariants: Variants = {
     open: (targetWidth: number) => ({
       width: targetWidth,
       transition: {
-        when: 'beforeChildren', // mount stays sequential: width → content
-        width: { duration: outerDuration, ease: EASE },
+        when: 'beforeChildren',
+        width: {
+          duration: outerDuration,
+          ease: EASE,
+        },
       },
     }),
+
     closed: {
       width: 0,
       transition: {
-        // no `when` ⇒ width + content run together on exit
-        width: { duration: outerDuration, ease: EASE },
+        width: {
+          duration: outerDuration,
+          ease: EASE,
+        },
       },
     },
   };
@@ -80,22 +115,37 @@ function AnimatedCollapsible({
       opacity: 1,
       scale: 1,
       transition: {
-        opacity: { duration: contentDuration, ease: 'easeOut' },
-        scale: { duration: contentDuration, ease: EASE },
+        opacity: {
+          duration: contentDuration,
+          ease: 'easeOut',
+        },
+        scale: {
+          duration: contentDuration,
+          ease: EASE,
+        },
       },
     },
+
     closed: {
       opacity: 0,
       scale: 0.82,
       transition: {
-        opacity: { duration: contentDuration, ease: 'easeIn' },
-        scale: { duration: contentDuration, ease: EASE },
+        opacity: {
+          duration: contentDuration,
+          ease: 'easeIn',
+        },
+        scale: {
+          duration: contentDuration,
+          ease: EASE,
+        },
       },
     },
   };
 
   useEffect(() => {
-    if (rootRef.current) rootRef.current.inert = !isPresent;
+    if (rootRef.current) {
+      rootRef.current.inert = !isPresent;
+    }
   }, [isPresent]);
 
   return (
@@ -104,13 +154,17 @@ function AnimatedCollapsible({
       className={`collapse-x ${className ?? ''}`}
       variants={containerVariants}
       custom={width}
-      initial="closed"
+      initial={false}
       animate="open"
       exit="closed"
       aria-hidden={!isPresent}
     >
       <div className="collapse-x_inner" style={{ width }}>
-        <motion.div className="collapse-x_content" variants={contentVariants}>
+        <motion.div
+          className="collapse-x_content"
+          variants={contentVariants}
+          initial={false}
+        >
           {children}
         </motion.div>
       </div>
@@ -120,11 +174,15 @@ function AnimatedCollapsible({
 
 export default function Collapsible({
   open,
+  ready = true,
   width,
   duration = OUTER_DURATION,
   className = '',
   children,
 }: CollapsibleProps) {
+  // Wait for persisted settings before rendering.
+  if (!ready) return null;
+
   return (
     <AnimatePresence initial={false}>
       {open && (
@@ -143,6 +201,7 @@ export default function Collapsible({
 
 interface ResponsiveCollapsibleProps {
   open: boolean;
+  ready?: boolean;
   duration?: number;
   className?: string;
   children: React.ReactNode;
@@ -150,18 +209,26 @@ interface ResponsiveCollapsibleProps {
 
 export function ResponsiveCollapsible({
   open,
+  ready = true,
   duration = OUTER_DURATION,
   className = '',
   children,
 }: ResponsiveCollapsibleProps) {
   const measureRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
+  const [width, setWidth] = useState<number | null>(null);
 
   useLayoutEffect(() => {
     const element = measureRef.current;
     if (!element) return;
 
-    const update = () => setWidth(element.getBoundingClientRect().width);
+    const update = () => {
+      const nextWidth = element.getBoundingClientRect().width;
+
+      setWidth((previous) =>
+        previous === nextWidth ? previous : nextWidth
+      );
+    };
+
     update();
 
     const observer = new ResizeObserver(update);
@@ -172,14 +239,17 @@ export function ResponsiveCollapsible({
 
   return (
     <div ref={measureRef} className={className}>
-      <Collapsible
-        open={open}
-        width={width}
-        duration={duration}
-        className="ml-auto"
-      >
-        {children}
-      </Collapsible>
+      {ready && width !== null && (
+        <Collapsible
+          open={open}
+          ready={ready}
+          width={width}
+          duration={duration}
+          className="ml-auto"
+        >
+          {children}
+        </Collapsible>
+      )}
     </div>
   );
 }

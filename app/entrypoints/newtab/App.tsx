@@ -181,9 +181,17 @@ export default function App() {
   const weatherVisible = settings.widgets.weather !== false;
   const timeVisible = settings.widgets.time !== false;
   const motivationVisible = settings.widgets.motivation !== false;
-  const cornerMounted = usePresence(weatherVisible || timeVisible, COLLAPSIBLE_EXIT_DURATION);
-  const motivationMounted = usePresence(motivationVisible, COLLAPSIBLE_EXIT_DURATION);
+  const cornerMounted = usePresence(
+    weatherVisible || timeVisible,
+    COLLAPSIBLE_EXIT_DURATION,
+    hydrated,
+  );
 
+  const motivationMounted = usePresence(
+    motivationVisible,
+    COLLAPSIBLE_EXIT_DURATION,
+    hydrated,
+  );
   return (
     <div className={`ntp-root theme-${theme} flex h-screen w-screen flex-col overflow-hidden`}>
       {look.kind === "video" ? <LoopingVideo key={look.url} className="ntp-bg" src={look.url} /> : <div className="ntp-bg" style={{ background: look.css }} aria-hidden="true" />}

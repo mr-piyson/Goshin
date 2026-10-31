@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from "motion/react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 type Quote = { id: number; text: string; author: string };
 
@@ -156,10 +156,11 @@ interface MotivationWidgetProps {
   interval?: number; // milliseconds
 }
 
-export default function MotivationWidget({
+const MotivationWidget = memo(function MotivationWidget({
   interval = 30_000,
 }: MotivationWidgetProps) {
   const [index, setIndex] = useState(0);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (QUOTES.length <= 1 || interval <= 0) return;
@@ -178,16 +179,32 @@ export default function MotivationWidget({
   return (
     <div className="glass rounded-2xl px-[31px] py-[13px] pb-[17px] text-center flex flex-col items-center justify-center overflow-hidden">
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false} mode="wait">
         <motion.div
           key={index}
-          initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
-          transition={{
-            duration: 0.45,
-            ease: [0.22, 1, 0.36, 1],
+          initial={false}
+          animate={{
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
           }}
+          exit={
+            reduceMotion
+              ? { opacity: 0 }
+              : {
+                  opacity: 0,
+                  y: -10,
+                  filter: "blur(4px)",
+                }
+          }
+          transition={
+            reduceMotion
+              ? { duration: 0.1 }
+              : {
+                  duration: 0.45,
+                  ease: [0.22, 1, 0.36, 1],
+                }
+          }
           className="flex flex-col items-center"
         >
           <p className="font-manrope text-[28px] font-medium leading-[36px]">
@@ -202,4 +219,6 @@ export default function MotivationWidget({
 
     </div>
   );
-}
+});
+
+export default MotivationWidget;
