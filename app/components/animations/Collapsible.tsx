@@ -142,7 +142,7 @@ const contentVariants: Variants = {
   return (
     <motion.div
       ref={rootRef}
-      className={`collapse-x shrink-0 overflow-hidden ${className}`}
+      className={`shrink-0 overflow-hidden ${className}`}
       variants={containerVariants}
       initial={false}
       animate={open ? "open" : "closed"}
@@ -160,7 +160,7 @@ const contentVariants: Variants = {
       }}
     >
       <div
-        className="collapse-x_inner"
+        className="h-full"
         style={{
           width,
           minWidth: width,
@@ -169,7 +169,7 @@ const contentVariants: Variants = {
         }}
       >
         <motion.div
-          className="collapse-x_content"
+          className="h-full"
           variants={contentVariants}
           initial={initialOpen ? "open" : "closed"}
           animate={open ? "open" : "closed"}  

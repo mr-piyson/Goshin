@@ -19,8 +19,8 @@ export default function Onboarding() {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="panel-backdrop absolute inset-0" onClick={() => { browser.storage.local.set({ onboarded: true }); setOpen(false); }} />
-      <div className="panel-surface relative w-full max-w-sm rounded-2xl border p-6 text-center">
+      <div className="absolute inset-0 bg-[rgba(3,6,15,0.36)] backdrop-blur-[2px]" onClick={() => { browser.storage.local.set({ onboarded: true }); setOpen(false); }} />
+      <div className="relative w-full max-w-sm rounded-2xl border border-[color:var(--border)] bg-[color:var(--panel)] text-[color:var(--text)] shadow-[-24px_0_60px_rgba(79,57,57,0.28)] backdrop-blur-[28px] backdrop-saturate-150 p-6 text-center">
         <h2 className="text-xl font-semibold mb-2">{STEPS[step]!.title}</h2>
         <p className="text-sm ui-muted mb-6">{STEPS[step]!.body}</p>
         <div className="flex items-center justify-between">

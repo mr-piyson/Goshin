@@ -21,9 +21,9 @@ export default function Panel({ title, subtitle, onClose, children, width = 'max
 
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="panel-backdrop absolute inset-0" onClick={onClose} />
+      <div className="absolute inset-0 bg-[rgba(3,6,15,0.36)] backdrop-blur-[2px]" onClick={onClose} />
       <aside
-        className={`panel-surface absolute right-0 top-0 flex h-full w-full ${width} flex-col border-l`}
+        className={`absolute right-0 top-0 flex h-full w-full ${width} flex-col border-l bg-[color:var(--panel)] border-[color:var(--border)] text-[color:var(--text)] shadow-[-24px_0_60px_rgba(79,57,57,0.28)] backdrop-blur-[28px] backdrop-saturate-150`}
         style={{ animation: 'panel-in 220ms cubic-bezier(0.22, 1, 0.36, 1)' }}
       >
         <header className="flex items-start justify-between gap-4 px-5 pb-3 pt-5">
