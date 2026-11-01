@@ -27,6 +27,7 @@ import {
   PinOffIcon,
   CloseIcon,
 } from './Icons';
+import { cn } from '@/lib/utils';
 
 export type SidebarAppId =
   | 'calendar'
@@ -182,28 +183,35 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
         </div>
       )}
 
-      {/* Main Sidebar Rail — floating inset pill, like the extension sidebar */}
       <aside
-        ref={sidebarRef}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          setHoveredTooltip(null);
-        }}
-        className={`fixed top-2 bottom-2 z-50 flex w-[52px] flex-col items-center justify-between py-2 transition-transform duration-300 ease-out glass rounded-2xl border border-[color:var(--border)] ${
-          isLeft
-            ? `left-2 ${!isExpanded ? '-translate-x-[calc(100%+8px)] shadow-none' : 'translate-x-0 shadow-xl'}`
-            : `right-2 ${!isExpanded ? 'translate-x-[calc(100%+8px)] shadow-none' : 'translate-x-0 shadow-xl'}`
-        }`}
-        aria-label="Apps sidebar"
-      >
+  className={cn(
+    'glass fixed top-2 bottom-2 z-50 flex w-[52px] flex-col items-center justify-between py-2 transition-transform duration-300 ease-out',
+    {
+      'left-2': isLeft,
+      'right-2': !isLeft,
+    },
+    // default: all four corners rounded
+    !activeAppDef && 'rounded-2xl',
+    // panel open + left: outer corners rounded, seam flush with the panel
+    // (no border on that side) so rail + panel read as one rounded box
+    !!activeAppDef && isLeft && 'rounded-l-2xl rounded-r-none border-r-0',
+    // panel open + right: only the outer (right) corners rounded
+    !!activeAppDef && !isLeft && 'rounded-r-2xl rounded-l-none border-l-0',
+  )}
+  aria-label="Apps sidebar"
+>
         {/* Solid surface layer — glass while closed, fades to a solid color
-            while a panel is open (toggled by opacity so it's animatable). */}
+            while a panel is open (toggled by opacity so it's animatable).
+            rounded-[inherit] keeps it inside the rail's rounded silhouette. */}
         <div
           aria-hidden="true"
-          className={`absolute inset-0 rounded-[inherit] -z-10 bg-[color:var(--sidebar-solid)] transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            activeAppDef ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={cn(
+            'absolute inset-0 rounded-[inherit] -z-10 bg-[color:var(--sidebar-solid)] transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+            {
+              'opacity-100': activeAppDef,
+              'opacity-0': !activeAppDef,
+            }
+          )}
         />
         {/* Middle: Apps List — 44px slots, icon tiles */}
         <nav className="flex flex-1 flex-col items-center gap-2 py-2 overflow-y-auto overflow-x-hidden ntp-scroll w-full px-1.5">
@@ -281,7 +289,7 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
       {/* Floating Tooltip */}
       {hoveredTooltip && isExpanded && (
         <div
-          className={`pointer-events-none fixed z-50 rounded-lg bg-[color:var(--panel)] px-2.5 py-1 text-xs font-medium text-[color:var(--text)] shadow-xl border border-[color:var(--border)] whitespace-nowrap transition-opacity duration-150 ${
+          className={`pointer-events-none fixed z-50 rounded-lg bg-[color:var(--panel)] px-2.5 py-1 text-xs font-medium text-[color:var(--text)] shadow-xl  whitespace-nowrap transition-opacity duration-150 ${
             isLeft ? 'left-[68px]' : 'right-[68px]'
           }`}
           style={{ top: hoveredTooltip.y, transform: 'translateY(-50%)' }}
@@ -297,12 +305,12 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
           Click-outside deliberately does NOT close it — same as the extension
           panel. Close via the active rail icon, ×, or Escape. */}
       <section
-        className={`fixed top-2 bottom-2 z-40 flex w-[360px] max-w-[calc(100vw-76px)] flex-col glass rounded-2xl border border-[color:var(--border)] transition-[clip-path] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`fixed glass top-2 bottom-2 z-40 flex w-[360px] max-w-[calc(100vw-68px)] flex-col transition-[clip-path] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           activeAppDef ? 'pointer-events-auto shadow-2xl [clip-path:inset(0_0_0_0)]' : 'pointer-events-none'
         } ${
           isLeft
-            ? `left-[60px] ${activeAppDef ? 'rounded-l-none border-l-0 rounded-r-2xl' : 'rounded-2xl [clip-path:inset(0_100%_0_0)]'}`
-            : `right-[60px] ${activeAppDef ? 'rounded-r-none border-r-0 rounded-l-2xl' : 'rounded-2xl [clip-path:inset(0_0_0_100%)]'}`
+            ? `left-[59px] ps-0 ${activeAppDef ? 'rounded-l-none border-l-0 rounded-r-2xl' : 'rounded-2xl [clip-path:inset(0_100%_0_0)]'}`
+            : `right-[59px] pe-0 ${activeAppDef ? 'rounded-r-none border-r-0 rounded-l-2xl' : 'rounded-2xl [clip-path:inset(0_0_0_100%)]'}`
         }`}
         role={activeAppDef ? 'dialog' : undefined}
         aria-label={activeAppDef?.label}
@@ -326,7 +334,7 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
         {activeAppDef && (
           <>
             {/* Panel Header */}
-            <header className="flex items-center justify-between border-b border-[color:var(--border)] px-4 py-3 shrink-0">
+            <header className="flex items-center justify-between  px-4 py-3 shrink-0">
               <div className="flex items-center gap-2.5 min-w-0">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-600/20 text-accent">
                   <activeAppDef.Icon className="h-4 w-4" />

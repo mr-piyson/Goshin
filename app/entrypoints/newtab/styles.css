@@ -210,12 +210,17 @@ body {
 }
 
 /* Surfaces --------------------------------------------------------------- */
-.glass {
-  background: var(--glass-surface);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
-  backdrop-filter: blur(20px) saturate(150%);
+/* Wrapped in @layer components so Tailwind utilities (e.g. border-l-0 on the
+   expanded sidebar panel) can override these base surface styles. Unlayered
+   CSS would always beat layered utilities in Tailwind v4. */
+@layer components {
+  .glass {
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+  }
 }
 
 /* Sidebar solid-surface token. The Sidebar component fades a
