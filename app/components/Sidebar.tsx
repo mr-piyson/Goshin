@@ -191,16 +191,20 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
           setHoveredTooltip(null);
         }}
         className={`fixed top-2 bottom-2 z-50 flex w-[52px] flex-col items-center justify-between py-2 transition-transform duration-300 ease-out glass rounded-2xl border border-[color:var(--border)] ${
-          activeAppDef ? 'sidebar-solid' : ''
-        } ${
           isLeft
             ? `left-2 ${!isExpanded ? '-translate-x-[calc(100%+8px)] shadow-none' : 'translate-x-0 shadow-xl'}`
             : `right-2 ${!isExpanded ? 'translate-x-[calc(100%+8px)] shadow-none' : 'translate-x-0 shadow-xl'}`
         }`}
         aria-label="Apps sidebar"
       >
-        {/* Solid surface cross-fade layer (invisible while glass, opaque when a panel is open) */}
-        <div className="sidebar-solid-layer" aria-hidden="true" />
+        {/* Solid surface layer — glass while closed, fades to a solid color
+            while a panel is open (toggled by opacity so it's animatable). */}
+        <div
+          aria-hidden="true"
+          className={`absolute inset-0 rounded-[inherit] -z-10 bg-[color:var(--sidebar-solid)] transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            activeAppDef ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
         {/* Middle: Apps List — 44px slots, icon tiles */}
         <nav className="flex flex-1 flex-col items-center gap-2 py-2 overflow-y-auto overflow-x-hidden ntp-scroll w-full px-1.5">
           {visibleApps.map((app) => {
@@ -287,32 +291,37 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
       )}
 
       {/* Panel that unfolds out of the fixed rail: anchored at the rail edge,
-          revealed via clip-path so it never slides a full card across the
-          page. Content eases in with a tiny offset while the window grows.
+          revealed via a clip-path curtain so it never slides a full card
+          across the page. Content eases in with a tiny offset while the
+          window grows; the surface cross-fades from glass to solid.
           Click-outside deliberately does NOT close it — same as the extension
           panel. Close via the active rail icon, ×, or Escape. */}
       <section
-        className={`fixed top-2 bottom-2 z-40 flex w-[360px] max-w-[calc(100vw-76px)] flex-col glass rounded-2xl border border-[color:var(--border)] transition-[clip-path] duration-300 ease-out ${
-          activeAppDef ? 'sidebar-solid sidebar-panel-open pointer-events-auto shadow-2xl' : 'pointer-events-none'
+        className={`fixed top-2 bottom-2 z-40 flex w-[360px] max-w-[calc(100vw-76px)] flex-col glass rounded-2xl border border-[color:var(--border)] transition-[clip-path] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          activeAppDef ? 'pointer-events-auto shadow-2xl [clip-path:inset(0_0_0_0)]' : 'pointer-events-none'
         } ${
           isLeft
-            ? `left-[60px] rounded-l-none border-l-0 ${activeAppDef ? 'rounded-r-2xl' : 'rounded-2xl sidebar-panel-closed-left'}`
-            : `right-[60px] rounded-r-none border-r-0 ${activeAppDef ? 'rounded-l-2xl' : 'rounded-2xl sidebar-panel-closed-right'}`
+            ? `left-[60px] ${activeAppDef ? 'rounded-l-none border-l-0 rounded-r-2xl' : 'rounded-2xl [clip-path:inset(0_100%_0_0)]'}`
+            : `right-[60px] ${activeAppDef ? 'rounded-r-none border-r-0 rounded-l-2xl' : 'rounded-2xl [clip-path:inset(0_0_0_100%)]'}`
         }`}
         role={activeAppDef ? 'dialog' : undefined}
         aria-label={activeAppDef?.label}
         aria-hidden={!activeAppDef}
       >
-        {/* Solid surface cross-fade layer — always present so opacity animates
-            0→1 on open and 1→0 on close (mounted layers can't transition). */}
-        <div className="sidebar-solid-layer" aria-hidden="true" />
-
-        {/* Motion wrapper — always mounted so the inner ease plays in sync
-            with the clip reveal (element persists between open/close states). */}
+        {/* Solid surface layer (element stays mounted so the fade can animate). */}
         <div
-          className={`flex min-h-0 flex-1 flex-col sidebar-panel-motion ${
-            activeAppDef ? 'sidebar-panel-motion-in' : ''
-          } ${isLeft ? 'sidebar-panel-motion-left' : 'sidebar-panel-motion-right'}`}
+          aria-hidden="true"
+          className={`absolute inset-0 rounded-[inherit] -z-10 bg-[color:var(--sidebar-solid)] transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            activeAppDef ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+
+        {/* Motion layer — always mounted so the inner ease plays in sync
+            with the clip reveal (the element persists between states). */}
+        <div
+          className={`flex min-h-0 flex-1 flex-col transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            activeAppDef ? 'opacity-100 translate-x-0' : `opacity-0 ${isLeft ? '-translate-x-3.5' : 'translate-x-3.5'}`
+          }`}
         >
         {activeAppDef && (
           <>
