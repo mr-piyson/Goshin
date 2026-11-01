@@ -26,6 +26,7 @@ const WIDGET_OPTIONS = [
 ];
 
 const SETTINGS_TABS = [
+  { id: "apps", label: "Apps" },
   { id: "sidebar", label: "Sidebar" },
   { id: "widgets", label: "Widgets" },
   { id: "general", label: "General" },
@@ -62,7 +63,7 @@ function TabPage({ id, active, children }: { id: string; active: boolean; childr
 
 function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { value: T; label: string }[]; onChange: (value: T) => void }) {
   return (
-    <div role="group" className="inline-flex flex-wrap items-center gap-0.5 rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] p-0.5">
+    <div role="group" className="inline-flex flex items-center gap-0.5 rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] p-0.5">
       {options.map((option) => {
         const isActive = value === option.value;
         return (
@@ -156,10 +157,10 @@ export default function Settings() {
             transition: `transform ${DURATION}ms ${EASE}`,
           }}
         >
-          {/* Sidebar Apps management */}
-          <TabPage id="sidebar" active={currentTab === "sidebar"}>
+          {/* Apps toggle page */}
+          <TabPage id="apps" active={currentTab === "apps"}>
             <Section title="Sidebar Apps" description="Choose which apps appear in your collapsible sidebar.">
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2">
                 {SIDEBAR_APP_OPTIONS.map((app) => {
                   const enabled = sidebarApps[app.id] ?? true;
                   const Icon = app.Icon;
@@ -192,7 +193,12 @@ export default function Settings() {
                   );
                 })}
               </div>
+            </Section>
+          </TabPage>
 
+          {/* Sidebar behavior page */}
+          <TabPage id="sidebar" active={currentTab === "sidebar"}>
+            <Section title="Behavior" description="How the sidebar rail behaves on the screen edge.">
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] p-3">
                 <div className="flex items-center gap-2">
                   <PinIcon className={`h-4 w-4 ${sidebarPinned ? "text-acbg-accent dark:text-accent/90" : "ui-muted"}`} />
@@ -224,7 +230,7 @@ export default function Settings() {
           {/* New tab ambient widgets */}
           <TabPage id="widgets" active={currentTab === "widgets"}>
             <Section title="New Tab Widgets" description="Choose ambient widgets displayed on the new tab wallpaper.">
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2">
                 {WIDGET_OPTIONS.map((widget) => {
                   const enabled = s.widgets[widget.id] ?? true;
                   return (

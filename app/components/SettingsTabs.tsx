@@ -23,10 +23,8 @@ export default function DraggableTabs({ tabs, active, onSelect }: DraggableTabsP
         <Tabs
           value={active}
           onChange={(_, next) => onSelect(String(next))}
-          variant="scrollable"
-          // Arrows appear only when tabs overflow the strip; they scale with the tab count.
-          scrollButtons="auto"
-          allowScrollButtonsMobile
+          variant="standard"
+          centered
           aria-label="Settings categories"
           sx={{
             minHeight: 36,
@@ -40,18 +38,6 @@ export default function DraggableTabs({ tabs, active, onSelect }: DraggableTabsP
             "& .MuiTabs-flexContainer": {
               gap: "4px",
             },
-            "& .MuiTabs-scrollButtons": {
-              width: 28,
-              alignSelf: "center",
-              color: "var(--muted)",
-              transition: `opacity ${DURATION}ms ${EASE}, color 150ms ease`,
-              "&:hover": {
-                color: "var(--text)",
-              },
-            },
-            "& .MuiTabs-scrollButtons.Mui-disabled": {
-              opacity: 0,
-            },
           }}
         >
           {tabs.map((tab) => (
@@ -62,7 +48,8 @@ export default function DraggableTabs({ tabs, active, onSelect }: DraggableTabsP
               disableRipple
               sx={{
                 minHeight: 36,
-                minWidth: { xs: 56, sm: 72 },
+                minWidth: 52,
+                px: 1.5,
                 fontSize: 12,
                 textTransform: "none",
                 fontWeight: active === tab.id ? 600 : 500,
