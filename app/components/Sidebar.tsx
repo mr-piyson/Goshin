@@ -49,67 +49,20 @@ interface AppDefinition {
 }
 
 const APPS: AppDefinition[] = [
-  {
-    id: 'calendar',
-    label: 'Calendar',
-    Icon: CalendarIcon,
-    render: () => <CalendarWidget />,
-  },
-  {
-    id: 'gmail',
-    label: 'Gmail',
-    Icon: MailIcon,
-    render: () => <GmailWidget />,
-  },
-  {
-    id: 'tasks',
-    label: 'Tasks',
-    Icon: TasksIcon,
-    render: () => <Tasks />,
-  },
-  {
-    id: 'notes',
-    label: 'Notes',
-    Icon: NotesIcon,
-    render: () => <Notes />,
-  },
-  {
-    id: 'history',
-    label: 'Tabs & History',
-    Icon: HistoryIcon,
-    render: () => <HistoryWidget />,
-  },
-  {
-    id: 'translator',
-    label: 'Translator',
-    Icon: TranslateIcon,
-    render: () => <Translator />,
-  },
-  {
-    id: 'lifeTimer',
-    label: 'Life timer',
-    Icon: HourglassIcon,
-    render: () => <LifeTimerWidget />,
-  },
-  {
-    id: 'topSites',
-    label: 'Top sites',
-    Icon: GlobeIcon,
-    render: () => <TopSites />,
-  },
-  {
-    id: 'account',
-    label: 'Account',
-    Icon: UserIcon,
-    render: () => <Account />,
-  },
-  {
-    id: 'settings',
-    label: 'Settings',
-    Icon: GearIcon,
-    render: () => <Settings />,
-  },
+  { id: 'calendar', label: 'Calendar', Icon: CalendarIcon, render: () => <CalendarWidget /> },
+  { id: 'gmail', label: 'Gmail', Icon: MailIcon, render: () => <GmailWidget /> },
+  { id: 'tasks', label: 'Tasks', Icon: TasksIcon, render: () => <Tasks /> },
+  { id: 'notes', label: 'Notes', Icon: NotesIcon, render: () => <Notes /> },
+  { id: 'history', label: 'Tabs & History', Icon: HistoryIcon, render: () => <HistoryWidget /> },
+  { id: 'translator', label: 'Translator', Icon: TranslateIcon, render: () => <Translator /> },
+  { id: 'lifeTimer', label: 'Life timer', Icon: HourglassIcon, render: () => <LifeTimerWidget /> },
+  { id: 'topSites', label: 'Top sites', Icon: GlobeIcon, render: () => <TopSites /> },
+  { id: 'account', label: 'Account', Icon: UserIcon, render: () => <Account /> },
+  { id: 'settings', label: 'Settings', Icon: GearIcon, render: () => <Settings /> },
 ];
+
+// Apps that live in the bottom section of the rail instead of the main list.
+const BOTTOM_APP_IDS: SidebarAppId[] = ['settings', 'account'];
 
 interface SidebarProps {
   /** Optional controlled open app id (used when other UI must drive the panel, e.g. CornerDock). */
@@ -117,75 +70,82 @@ interface SidebarProps {
   onActiveAppChange?: (id: SidebarAppId | null) => void;
 }
 
+interface RailButtonProps {
+  app: AppDefinition;
+  isActive: boolean;
+  onToggle: (id: SidebarAppId) => void;
+  onHover: (tip: { label: string; y: number } | null) => void;
+}
+
+function RailButton({ app, isActive, onToggle, onHover }: RailButtonProps) {
+  const { Icon } = app;
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(app.id)}
+      onMouseEnter={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        onHover({ label: app.label, y: rect.top + rect.height / 2 });
+      }}
+      onMouseLeave={() => onHover(null)}
+      aria-label={app.label}
+      aria-expanded={isActive}
+      className={cn(
+        'flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-150',
+        isActive
+          ? 'bg-accent text-white shadow-[0_0_14px_rgba(139,92,246,0.4)]'
+          : 'ui-muted hover:bg-[color:var(--surface-strong)] hover:text-[color:var(--text)] active:scale-95',
+      )}
+    >
+      <Icon className="h-5 w-5" />
+    </button>
+  );
+}
+
 export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }: SidebarProps) {
   const dispatch = useDispatch<AppDispatch>();
   const settings = useSelector((state: RootState) => state.settings);
   const sidebarApps = settings.sidebarApps ?? {};
   const isPinned = settings.sidebarPinned ?? true;
-  const position = settings.sidebarPosition ?? 'left';
+  const isLeft = (settings.sidebarPosition ?? 'left') === 'left';
 
+  // Controlled / uncontrolled open app
   const [internalApp, setInternalApp] = useState<SidebarAppId | null>(null);
   const activeApp = controlledApp !== undefined ? controlledApp : internalApp;
   const setActiveApp = (next: SidebarAppId | null) => {
     if (onActiveAppChange) onActiveAppChange(next);
     else setInternalApp(next);
   };
+  const toggleApp = (id: SidebarAppId) => setActiveApp(activeApp === id ? null : id);
+
+  const isOpen = activeApp !== null;
+
+  // Keep the last app rendered while the panel collapses, so it never empties mid-close.
+  const lastApp = useRef<SidebarAppId | null>(null);
+  if (activeApp) lastApp.current = activeApp;
+  const shownApp = APPS.find((a) => a.id === (activeApp ?? lastApp.current));
 
   const [isHovered, setIsHovered] = useState(false);
-  const [hoveredTooltip, setHoveredTooltip] = useState<{ label: string; y: number } | null>(null);
-  const sidebarRef = useRef<HTMLDivElement>(null);
+  const [tooltip, setTooltip] = useState<{ label: string; y: number } | null>(null);
 
-  // Close panel on Escape (click-outside is intentionally NOT wired up —
-  // the panel stays open until the active rail icon, the close button or
-  // Escape is used, matching the extension sidebar behavior).
+  // Close on Escape (click-outside intentionally not wired up)
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && activeApp) {
-        setActiveApp(null);
-      }
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setActiveApp(null);
     };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [activeApp]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
-  // Filter apps configured to show in sidebar
-  const visibleApps = APPS.filter(
-    (app) => app.id !== 'settings' && app.id !== 'account' && (sidebarApps[app.id] ?? true),
+  const mainApps = APPS.filter(
+    (app) => !BOTTOM_APP_IDS.includes(app.id) && (sidebarApps[app.id] ?? true),
   );
+  const bottomApps = APPS.filter((app) => BOTTOM_APP_IDS.includes(app.id));
 
-  const activeAppDef = APPS.find((a) => a.id === activeApp);
-
-  // Keep the last-open panel's content mounted while it slides closed, so the
-  // card never recedes behind the rail empty.
-  const [lastAppId, setLastAppId] = useState<SidebarAppId | null>(null);
-  useEffect(() => {
-    if (activeApp) setLastAppId(activeApp);
-  }, [activeApp]);
-  const displayedAppDef = APPS.find((a) => a.id === (activeApp ?? lastAppId));
-
-  // True while the panel is open OR still animating closed. The rail keeps its
-  // open-state look (opaque solid surface, flush seam, no re-rounded corners)
-  // for the full close slide, so the card appears to vanish BEHIND an intact
-  // aside instead of next to a morphing one. Only after the slide does the
-  // rail settle back to the closed pill.
-  const [panelAnimating, setPanelAnimating] = useState(false);
-  useEffect(() => {
-    if (activeAppDef) {
-      setPanelAnimating(true);
-      return;
-    }
-    const t = setTimeout(() => setPanelAnimating(false), 300);
-    return () => clearTimeout(t);
-  }, [activeAppDef]);
-
-  const toggleApp = (id: SidebarAppId) => {
-    setActiveApp(activeApp === id ? null : id);
-  };
-
-  const isLeft = position === 'left';
-
-  // Whether sidebar rail is visually visible (pinned, hovered, or a panel is open)
-  const isExpanded = isPinned || isHovered || !!activeApp;
+  // When unpinned, the whole sidebar is tucked off-screen until hovered or a panel is open.
+  const isRevealed = isPinned || isHovered || isOpen;
 
   return (
     <>
@@ -193,226 +153,146 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
       {!isPinned && (
         <div
           onMouseEnter={() => setIsHovered(true)}
-          className={`fixed top-0 bottom-0 z-40 w-3 cursor-pointer transition-colors duration-200 ${
-            isLeft ? 'left-0 hover:bg-accent/20' : 'right-0 hover:bg-accent/20'
-          }`}
           title="Hover to show sidebar"
+          className={cn(
+            'fixed bottom-0 top-0 z-40 w-3 cursor-pointer transition-colors duration-200 hover:bg-accent/20',
+            isLeft ? 'left-0' : 'right-0',
+          )}
         >
           <div
-            className={`absolute top-1/2 -translate-y-1/2 h-12 w-1 rounded-full bg-white/20 transition-all group-hover:bg-accent ${
-              isLeft ? 'left-1' : 'right-1'
-            }`}
+            className={cn(
+              'absolute top-1/2 h-12 w-1 -translate-y-1/2 rounded-full bg-white/20',
+              isLeft ? 'left-1' : 'right-1',
+            )}
           />
         </div>
       )}
 
+      {/*
+        One rounded glass box holds the rail AND the panel.
+        - Closed: the panel is 0px wide, so you just see the rail as a rounded pill.
+        - Open:   the panel grows next to the rail inside the same rounded box,
+                  so they read as one shape. No corner/seam juggling needed.
+        - Close:  the panel width shrinks and its content is anchored to the rail edge,
+                  so it looks like it slides behind the rail.
+      */}
       <aside
-  className={cn(
-    'glass fixed top-2 bottom-2 z-50 flex w-[52px] flex-col items-center justify-between py-2 transition-[transform,border-radius] duration-300 ease-out',
-    {
-      'left-2': isLeft,
-      'right-2': !isLeft,
-    },
-    // default: all four corners rounded
-    !panelAnimating && 'rounded-2xl',
-    // panel open + left: outer corners rounded, seam flush with the panel
-    // (no border on that side) so rail + panel read as one rounded box
-    panelAnimating && isLeft && 'rounded-l-2xl rounded-r-none border-r-0',
-    // panel open + right: only the outer (right) corners rounded
-    panelAnimating && !isLeft && 'rounded-r-2xl rounded-l-none border-l-0',
-  )}
-  aria-label="Apps sidebar"
->
-        {/* Solid surface layer — glass while closed, fades to a solid color
-            while a panel is open (toggled by opacity so it's animatable).
-            rounded-[inherit] keeps it inside the rail's rounded silhouette. */}
-        <div
-          aria-hidden="true"
-          className={cn(
-            'absolute inset-0 rounded-[inherit] -z-10 bg-[color:var(--sidebar-solid)] transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-            {
-              'opacity-100': panelAnimating,
-              'opacity-0': !panelAnimating,
-            }
-          )}
-        />
-        {/* Middle: Apps List — 44px slots, icon tiles */}
-        <nav className="flex flex-1 flex-col items-center gap-2 py-2 overflow-y-auto overflow-x-hidden ntp-scroll w-full px-1.5">
-          {visibleApps.map((app) => {
-            const isActive = activeApp === app.id;
-            const Icon = app.Icon;
-            return (
-              <button
+        aria-label="Apps sidebar"
+        onMouseLeave={() => setIsHovered(false)}
+        className={cn(
+          'glass fixed bottom-2 top-2 z-50 flex overflow-hidden rounded-2xl transition-transform duration-300 ease-out',
+          isLeft ? 'left-2 flex-row' : 'right-2 flex-row-reverse',
+          !isRevealed && (isLeft ? '-translate-x-[calc(100%+0.5rem)]' : 'translate-x-[calc(100%+0.5rem)]'),
+        )}
+      >
+        {/* Rail */}
+        <div className="flex w-[52px] shrink-0 flex-col items-center justify-between py-2">
+          <nav className="ntp-scroll flex w-full flex-1 flex-col items-center gap-2 overflow-y-auto overflow-x-hidden px-1.5 py-2">
+            {mainApps.map((app) => (
+              <RailButton
                 key={app.id}
-                type="button"
-                onClick={() => toggleApp(app.id)}
-                onMouseEnter={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  setHoveredTooltip({ label: app.label, y: rect.top + rect.height / 2 });
-                }}
-                onMouseLeave={() => setHoveredTooltip(null)}
-                className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-150 ${
-                  isActive
-                    ? 'bg-accent text-white shadow-[0_0_14px_rgba(139,92,246,0.4)]'
-                    : 'ui-muted hover:text-[color:var(--text)] hover:bg-[color:var(--surface-strong)] active:scale-95'
-                }`}
-                aria-label={app.label}
-                aria-expanded={isActive}
-              >
-                <Icon className="h-5 w-5" />
-              </button>
-            );
-          })}
-        </nav>
+                app={app}
+                isActive={activeApp === app.id}
+                onToggle={toggleApp}
+                onHover={setTooltip}
+              />
+            ))}
+          </nav>
 
-        {/* Bottom: divider, Settings, Account — pinned tile stack */}
-        <div className="flex flex-col items-center gap-2 pt-2 w-full px-1.5">
-          <div className="h-px w-7 bg-[color:var(--border)] mb-0.5 shrink-0" />
-
-          {/* Settings */}
-          <button
-            type="button"
-            onClick={() => toggleApp('settings')}
-            onMouseEnter={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              setHoveredTooltip({ label: 'Settings', y: rect.top + rect.height / 2 });
-            }}
-            onMouseLeave={() => setHoveredTooltip(null)}
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-150 ${
-              activeApp === 'settings'
-                ? 'bg-accent text-white shadow-[0_0_14px_rgba(139,92,246,0.4)]'
-                : 'ui-muted hover:text-[color:var(--text)] hover:bg-[color:var(--surface-strong)] active:scale-95'
-            }`}
-            aria-label="Settings"
-          >
-            <GearIcon className="h-5 w-5" />
-          </button>
-
-          {/* Account */}
-          <button
-            type="button"
-            onClick={() => toggleApp('account')}
-            onMouseEnter={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              setHoveredTooltip({ label: 'Account & sync', y: rect.top + rect.height / 2 });
-            }}
-            onMouseLeave={() => setHoveredTooltip(null)}
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full overflow-hidden transition-all duration-150 ${
-              activeApp === 'account'
-                ? 'bg-accent text-white shadow-[0_0_14px_rgba(139,92,246,0.4)]'
-                : 'ui-muted hover:text-[color:var(--text)] hover:bg-[color:var(--surface-strong)] active:scale-95'
-            }`}
-            aria-label="Account"
-          >
-            <UserIcon className="h-5 w-5" />
-          </button>
+          <div className="flex w-full flex-col items-center gap-2 px-1.5 pt-2">
+            <div className="mb-0.5 h-px w-7 shrink-0 bg-[color:var(--border)]" />
+            {bottomApps.map((app) => (
+              <RailButton
+                key={app.id}
+                app={app}
+                isActive={activeApp === app.id}
+                onToggle={toggleApp}
+                onHover={setTooltip}
+              />
+            ))}
+          </div>
         </div>
+
+        {/* Panel: width animates 0 -> 360. Visibility flips at the end of the close
+            so hidden content can't be tabbed into. */}
+        <section
+          role={isOpen ? 'dialog' : undefined}
+          aria-label={shownApp?.label}
+          aria-hidden={!isOpen}
+          className={cn(
+            'flex min-w-0 overflow-hidden transition-[width,visibility] duration-300 ease-out',
+            isLeft ? 'flex-row justify-end border-l' : 'flex-row-reverse justify-end border-r',
+            'border-[color:var(--border)]',
+            isOpen ? 'visible w-[min(360px,calc(100vw-4.5rem))]' : 'invisible w-0 border-transparent',
+          )}
+        >
+          {/* Fixed-width inner box: content never reflows while the width animates */}
+          <div className="flex h-full w-[min(360px,calc(100vw-4.5rem))] shrink-0 flex-col">
+            {shownApp && (
+              <>
+                <header className="flex shrink-0 items-center justify-between px-4 py-3">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-600/20 text-accent">
+                      <shownApp.Icon className="h-4 w-4" />
+                    </span>
+                    <h2 className="truncate text-sm font-semibold leading-tight">{shownApp.label}</h2>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    {shownApp.id !== 'settings' && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveApp('settings')}
+                        title="Open settings"
+                        className="ui-muted flex h-7 w-7 items-center justify-center rounded-lg transition hover:bg-[color:var(--surface-strong)] hover:text-[color:var(--text)]"
+                      >
+                        <GearIcon className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => dispatch(setSidebarPinned(!isPinned))}
+                      title={isPinned ? 'Unpin sidebar (auto-collapse)' : 'Pin sidebar (always visible)'}
+                      aria-label={isPinned ? 'Unpin sidebar' : 'Pin sidebar'}
+                      className={cn(
+                        'flex h-7 w-7 items-center justify-center rounded-lg transition',
+                        isPinned
+                          ? 'text-accent hover:bg-accent/15'
+                          : 'ui-muted hover:bg-[color:var(--surface-strong)] hover:text-[color:var(--text)]',
+                      )}
+                    >
+                      {isPinned ? <PinIcon className="h-4 w-4" /> : <PinOffIcon className="h-4 w-4" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveApp(null)}
+                      title="Close (Esc)"
+                      className="ui-muted flex h-7 w-7 items-center justify-center rounded-lg transition hover:bg-[color:var(--surface-strong)] hover:text-[color:var(--text)]"
+                    >
+                      <CloseIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </header>
+
+                <div className="ntp-scroll min-h-0 flex-1 overflow-y-auto p-4">{shownApp.render()}</div>
+              </>
+            )}
+          </div>
+        </section>
       </aside>
 
-      {/* Floating Tooltip */}
-      {hoveredTooltip && isExpanded && (
+      {/* Floating tooltip */}
+      {tooltip && isRevealed && (
         <div
-          className={`pointer-events-none fixed z-50 rounded-lg bg-[color:var(--panel)] px-2.5 py-1 text-xs font-medium text-[color:var(--text)] shadow-xl  whitespace-nowrap transition-opacity duration-150 ${
-            isLeft ? 'left-[68px]' : 'right-[68px]'
-          }`}
-          style={{ top: hoveredTooltip.y, transform: 'translateY(-50%)' }}
+          className={cn(
+            'pointer-events-none fixed z-[60] whitespace-nowrap rounded-lg bg-[color:var(--panel)] px-2.5 py-1 text-xs font-medium text-[color:var(--text)] shadow-xl',
+            isLeft ? 'left-[68px]' : 'right-[68px]',
+          )}
+          style={{ top: tooltip.y, transform: 'translateY(-50%)' }}
         >
-          {hoveredTooltip.label}
+          {tooltip.label}
         </div>
       )}
-
-      {/* Panel that slides BEHIND the rail: the outer wrapper is a
-          viewport-anchored mask (overflow-hidden) whose seam edge sits under
-          the rail's edge, so the panel physically slides in/out and reads as
-          hidden behind the aside instead of being trimmed by a clip-path cut
-          line. Click-outside deliberately does NOT close it — same as the
-          extension panel. Close via the active rail icon, ×, or Escape. */}
-      <div
-        aria-hidden={!activeAppDef}
-        className={`fixed top-2 bottom-2 z-40 w-[360px] max-w-[calc(100vw-68px)] overflow-hidden pointer-events-none ${
-          isLeft ? 'left-[59px]' : 'right-[59px]'
-        }`}
-      >
-      <section
-        className={`absolute inset-0 glass flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-          isLeft
-            ? 'rounded-l-none border-l-0 rounded-r-2xl'
-            : 'rounded-r-none border-r-0 rounded-l-2xl'
-        } ${
-          activeAppDef
-            ? 'pointer-events-auto translate-x-0'
-            : `pointer-events-auto ${
-                isLeft ? '-translate-x-[calc(100%+40px)]' : 'translate-x-[calc(100%+40px)]'
-              }`
-        }`}
-        role={activeAppDef ? 'dialog' : undefined}
-        aria-label={displayedAppDef?.label}
-      >
-        {/* Solid surface layer (element stays mounted so the fade can animate). */}
-        <div
-          aria-hidden="true"
-          className={`absolute inset-0 rounded-[inherit] -z-10 bg-[color:var(--sidebar-solid)] transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            panelAnimating ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-
-        {/* Content — kept mounted during the close slide via lastAppId. */}
-        <div className="flex min-h-0 flex-1 flex-col">
-        {displayedAppDef && (
-          <>
-            {/* Panel Header */}
-            <header className="flex items-center justify-between  px-4 py-3 shrink-0">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-600/20 text-accent">
-                  <displayedAppDef.Icon className="h-4 w-4" />
-                </span>
-                <h2 className="text-sm font-semibold truncate leading-tight">{displayedAppDef.label}</h2>
-              </div>
-
-              <div className="flex items-center gap-1">
-                {displayedAppDef?.id !== 'settings' && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveApp('settings')}
-                    title="Open settings"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg ui-muted hover:text-[color:var(--text)] hover:bg-[color:var(--surface-strong)] transition"
-                  >
-                    <GearIcon className="h-3.5 w-3.5" />
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => dispatch(setSidebarPinned(!isPinned))}
-                  title={isPinned ? 'Unpin sidebar (auto-collapse)' : 'Pin sidebar (always visible)'}
-                  className={`flex h-7 w-7 items-center justify-center rounded-lg transition ${
-                    isPinned
-                      ? 'text-accent hover:bg-accent/15'
-                      : 'ui-muted hover:text-[color:var(--text)] hover:bg-[color:var(--surface-strong)]'
-                  }`}
-                  aria-label={isPinned ? 'Unpin sidebar' : 'Pin sidebar'}
-                >
-                  {isPinned ? <PinIcon className="h-4 w-4" /> : <PinOffIcon className="h-4 w-4" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveApp(null)}
-                  title="Close (Esc)"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg ui-muted hover:text-[color:var(--text)] hover:bg-[color:var(--surface-strong)] transition"
-                >
-                  <CloseIcon className="h-4 w-4" />
-                </button>
-              </div>
-            </header>
-
-            {/* Panel Content */}
-            <div className="flex-1 overflow-y-auto p-4 ntp-scroll min-h-0">
-              {displayedAppDef.render()}
-            </div>
-          </>
-        )}
-        </div>
-      </section>
-      </div>
     </>
   );
 }
