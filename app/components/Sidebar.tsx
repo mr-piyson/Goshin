@@ -180,9 +180,10 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
         aria-label="Apps sidebar"
         onMouseLeave={() => setIsHovered(false)}
         className={cn(
-          'glass fixed bottom-2 top-2 z-50 flex overflow-hidden rounded-2xl transition-transform duration-300 ease-out',
+          'glass  fixed bottom-2 top-2 z-50 flex overflow-hidden rounded-2xl transition-all duration-300 ease-out',
           isLeft ? 'left-2 flex-row' : 'right-2 flex-row-reverse',
           !isRevealed && (isLeft ? '-translate-x-[calc(100%+0.5rem)]' : 'translate-x-[calc(100%+0.5rem)]'),
+          isOpen && ('bg-card')
         )}
       >
         {/* Rail */}
@@ -227,13 +228,13 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
           )}
         >
           {/* Fixed-width inner box: content never reflows while the width animates */}
-          <div className="flex h-full w-[min(360px,calc(100vw-4.5rem))] shrink-0 flex-col">
+          <div className="flex bg-background h-full w-[min(360px,calc(100vw-4.5rem))] shrink-0 flex-col">
             {shownApp && (
               <>
-                <header className="flex shrink-0 items-center justify-between px-4 py-3">
+                <header className="flex text-muted bg-header shrink-0 items-center justify-between px-2 py-1">
                   <div className="flex min-w-0 items-center gap-2.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-600/20 text-accent">
-                      <shownApp.Icon className="h-4 w-4" />
+                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-xl text-muted">
+                      <shownApp.Icon className="h-full w-full" />
                     </span>
                     <h2 className="truncate text-sm font-semibold leading-tight">{shownApp.label}</h2>
                   </div>
