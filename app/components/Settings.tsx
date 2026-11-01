@@ -63,7 +63,7 @@ function TabPage({ id, active, children }: { id: string; active: boolean; childr
 
 function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { value: T; label: string }[]; onChange: (value: T) => void }) {
   return (
-    <div role="group" className="inline-flex flex items-center gap-0.5 rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] p-0.5">
+    <div role="group" className="inline-flex items-center gap-0.5 rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] p-0.5">
       {options.map((option) => {
         const isActive = value === option.value;
         return (

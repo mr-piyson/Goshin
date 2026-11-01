@@ -190,7 +190,7 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
           setIsHovered(false);
           setHoveredTooltip(null);
         }}
-        className={`fixed top-2 bottom-2 z-40 flex w-[52px] flex-col items-center justify-between py-2 transition-transform duration-300 ease-out glass rounded-2xl border border-[color:var(--border)] ${
+        className={`fixed top-2 bottom-2 z-50 flex w-[52px] flex-col items-center justify-between py-2 transition-transform duration-300 ease-out glass rounded-2xl border border-[color:var(--border)] ${
           activeAppDef ? 'sidebar-solid' : ''
         } ${
           isLeft
@@ -286,17 +286,19 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
         </div>
       )}
 
-      {/* Full-height edge-docked panel (apps + settings).
+      {/* Panel that unfolds out of the fixed rail: anchored at the rail edge,
+          revealed via clip-path so it never slides a full card across the
+          page. Content eases in with a tiny offset while the window grows.
           Click-outside deliberately does NOT close it — same as the extension
-          panel. Close via the active rail icon, the × button, or Escape. */}
+          panel. Close via the active rail icon, ×, or Escape. */}
       <section
-        className={`fixed top-2 bottom-2 z-40 flex w-[360px] max-w-[calc(100vw-76px)] flex-col glass rounded-2xl border border-[color:var(--border)] transition-transform duration-300 ease-out ${
-          activeAppDef ? 'sidebar-solid' : ''
+        className={`fixed top-2 bottom-2 z-40 flex w-[360px] max-w-[calc(100vw-76px)] flex-col glass rounded-2xl border border-[color:var(--border)] transition-[clip-path] duration-300 ease-out ${
+          activeAppDef ? 'sidebar-solid sidebar-panel-open pointer-events-auto shadow-2xl' : 'pointer-events-none'
         } ${
           isLeft
-            ? `left-[60px] rounded-l-none border-l-0 ${activeAppDef ? 'translate-x-0 rounded-r-2xl' : '-translate-x-[calc(100%+60px)] rounded-2xl'}`
-            : `right-[60px] rounded-r-none border-r-0 ${activeAppDef ? 'translate-x-0 rounded-l-2xl' : 'translate-x-[calc(100%+60px)] rounded-2xl'}`
-        } ${activeAppDef ? 'pointer-events-auto shadow-2xl' : 'pointer-events-none'}`}
+            ? `left-[60px] rounded-l-none border-l-0 ${activeAppDef ? 'rounded-r-2xl' : 'rounded-2xl sidebar-panel-closed-left'}`
+            : `right-[60px] rounded-r-none border-r-0 ${activeAppDef ? 'rounded-l-2xl' : 'rounded-2xl sidebar-panel-closed-right'}`
+        }`}
         role={activeAppDef ? 'dialog' : undefined}
         aria-label={activeAppDef?.label}
         aria-hidden={!activeAppDef}
@@ -305,6 +307,13 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
             0→1 on open and 1→0 on close (mounted layers can't transition). */}
         <div className="sidebar-solid-layer" aria-hidden="true" />
 
+        {/* Motion wrapper — always mounted so the inner ease plays in sync
+            with the clip reveal (element persists between open/close states). */}
+        <div
+          className={`flex min-h-0 flex-1 flex-col sidebar-panel-motion ${
+            activeAppDef ? 'sidebar-panel-motion-in' : ''
+          } ${isLeft ? 'sidebar-panel-motion-left' : 'sidebar-panel-motion-right'}`}
+        >
         {activeAppDef && (
           <>
             {/* Panel Header */}
@@ -357,6 +366,7 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
             </div>
           </>
         )}
+        </div>
       </section>
     </>
   );
