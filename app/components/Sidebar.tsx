@@ -155,6 +155,14 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
 
   const activeAppDef = APPS.find((a) => a.id === activeApp);
 
+  // Keep the last-open panel's content mounted while it slides closed, so the
+  // card never recedes behind the rail empty.
+  const [lastAppId, setLastAppId] = useState<SidebarAppId | null>(null);
+  useEffect(() => {
+    if (activeApp) setLastAppId(activeApp);
+  }, [activeApp]);
+  const displayedAppDef = APPS.find((a) => a.id === (activeApp ?? lastAppId));
+
   const toggleApp = (id: SidebarAppId) => {
     setActiveApp(activeApp === id ? null : id);
   };
@@ -298,23 +306,32 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
         </div>
       )}
 
-      {/* Panel that unfolds out of the fixed rail: anchored at the rail edge,
-          revealed via a clip-path curtain so it never slides a full card
-          across the page. Content eases in with a tiny offset while the
-          window grows; the surface cross-fades from glass to solid.
-          Click-outside deliberately does NOT close it — same as the extension
-          panel. Close via the active rail icon, ×, or Escape. */}
+      {/* Panel that slides BEHIND the rail: the outer wrapper is a
+          viewport-anchored mask (overflow-hidden) whose seam edge sits under
+          the rail's edge, so the panel physically slides in/out and reads as
+          hidden behind the aside instead of being trimmed by a clip-path cut
+          line. Click-outside deliberately does NOT close it — same as the
+          extension panel. Close via the active rail icon, ×, or Escape. */}
+      <div
+        aria-hidden={!activeAppDef}
+        className={`fixed top-2 bottom-2 z-40 w-[360px] max-w-[calc(100vw-68px)] overflow-hidden pointer-events-none ${
+          isLeft ? 'left-[59px]' : 'right-[59px]'
+        }`}
+      >
       <section
-        className={`fixed glass top-2 bottom-2 z-40 flex w-[360px] max-w-[calc(100vw-68px)] flex-col transition-[clip-path] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-          activeAppDef ? 'pointer-events-auto shadow-2xl [clip-path:inset(0_0_0_0)]' : 'pointer-events-none'
-        } ${
+        className={`absolute inset-0 glass flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           isLeft
-            ? `left-[59px] ps-0 ${activeAppDef ? 'rounded-l-none border-l-0 rounded-r-2xl' : 'rounded-2xl [clip-path:inset(0_100%_0_0)]'}`
-            : `right-[59px] pe-0 ${activeAppDef ? 'rounded-r-none border-r-0 rounded-l-2xl' : 'rounded-2xl [clip-path:inset(0_0_0_100%)]'}`
+            ? 'rounded-l-none border-l-0 rounded-r-2xl'
+            : 'rounded-r-none border-r-0 rounded-l-2xl'
+        } ${
+          activeAppDef
+            ? 'pointer-events-auto translate-x-0'
+            : `pointer-events-auto ${
+                isLeft ? '-translate-x-[calc(100%+40px)]' : 'translate-x-[calc(100%+40px)]'
+              }`
         }`}
         role={activeAppDef ? 'dialog' : undefined}
-        aria-label={activeAppDef?.label}
-        aria-hidden={!activeAppDef}
+        aria-label={displayedAppDef?.label}
       >
         {/* Solid surface layer (element stays mounted so the fade can animate). */}
         <div
@@ -324,26 +341,21 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
           }`}
         />
 
-        {/* Motion layer — always mounted so the inner ease plays in sync
-            with the clip reveal (the element persists between states). */}
-        <div
-          className={`flex min-h-0 flex-1 flex-col transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            activeAppDef ? 'opacity-100 translate-x-0' : `opacity-0 ${isLeft ? '-translate-x-3.5' : 'translate-x-3.5'}`
-          }`}
-        >
-        {activeAppDef && (
+        {/* Content — kept mounted during the close slide via lastAppId. */}
+        <div className="flex min-h-0 flex-1 flex-col">
+        {displayedAppDef && (
           <>
             {/* Panel Header */}
             <header className="flex items-center justify-between  px-4 py-3 shrink-0">
               <div className="flex items-center gap-2.5 min-w-0">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-600/20 text-accent">
-                  <activeAppDef.Icon className="h-4 w-4" />
+                  <displayedAppDef.Icon className="h-4 w-4" />
                 </span>
-                <h2 className="text-sm font-semibold truncate leading-tight">{activeAppDef.label}</h2>
+                <h2 className="text-sm font-semibold truncate leading-tight">{displayedAppDef.label}</h2>
               </div>
 
               <div className="flex items-center gap-1">
-                {activeApp !== 'settings' && (
+                {displayedAppDef?.id !== 'settings' && (
                   <button
                     type="button"
                     onClick={() => setActiveApp('settings')}
@@ -379,12 +391,13 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
 
             {/* Panel Content */}
             <div className="flex-1 overflow-y-auto p-4 ntp-scroll min-h-0">
-              {activeAppDef.render()}
+              {displayedAppDef.render()}
             </div>
           </>
         )}
         </div>
       </section>
+      </div>
     </>
   );
 }
