@@ -163,6 +163,21 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
   }, [activeApp]);
   const displayedAppDef = APPS.find((a) => a.id === (activeApp ?? lastAppId));
 
+  // True while the panel is open OR still animating closed. The rail keeps its
+  // open-state look (opaque solid surface, flush seam, no re-rounded corners)
+  // for the full close slide, so the card appears to vanish BEHIND an intact
+  // aside instead of next to a morphing one. Only after the slide does the
+  // rail settle back to the closed pill.
+  const [panelAnimating, setPanelAnimating] = useState(false);
+  useEffect(() => {
+    if (activeAppDef) {
+      setPanelAnimating(true);
+      return;
+    }
+    const t = setTimeout(() => setPanelAnimating(false), 300);
+    return () => clearTimeout(t);
+  }, [activeAppDef]);
+
   const toggleApp = (id: SidebarAppId) => {
     setActiveApp(activeApp === id ? null : id);
   };
@@ -193,18 +208,18 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
 
       <aside
   className={cn(
-    'glass fixed top-2 bottom-2 z-50 flex w-[52px] flex-col items-center justify-between py-2 transition-transform duration-300 ease-out',
+    'glass fixed top-2 bottom-2 z-50 flex w-[52px] flex-col items-center justify-between py-2 transition-[transform,border-radius] duration-300 ease-out',
     {
       'left-2': isLeft,
       'right-2': !isLeft,
     },
     // default: all four corners rounded
-    !activeAppDef && 'rounded-2xl',
+    !panelAnimating && 'rounded-2xl',
     // panel open + left: outer corners rounded, seam flush with the panel
     // (no border on that side) so rail + panel read as one rounded box
-    !!activeAppDef && isLeft && 'rounded-l-2xl rounded-r-none border-r-0',
+    panelAnimating && isLeft && 'rounded-l-2xl rounded-r-none border-r-0',
     // panel open + right: only the outer (right) corners rounded
-    !!activeAppDef && !isLeft && 'rounded-r-2xl rounded-l-none border-l-0',
+    panelAnimating && !isLeft && 'rounded-r-2xl rounded-l-none border-l-0',
   )}
   aria-label="Apps sidebar"
 >
@@ -216,8 +231,8 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
           className={cn(
             'absolute inset-0 rounded-[inherit] -z-10 bg-[color:var(--sidebar-solid)] transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
             {
-              'opacity-100': activeAppDef,
-              'opacity-0': !activeAppDef,
+              'opacity-100': panelAnimating,
+              'opacity-0': !panelAnimating,
             }
           )}
         />
@@ -337,7 +352,7 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
         <div
           aria-hidden="true"
           className={`absolute inset-0 rounded-[inherit] -z-10 bg-[color:var(--sidebar-solid)] transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            activeAppDef ? 'opacity-100' : 'opacity-0'
+            panelAnimating ? 'opacity-100' : 'opacity-0'
           }`}
         />
 
