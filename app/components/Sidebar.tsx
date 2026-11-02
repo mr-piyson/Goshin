@@ -68,6 +68,10 @@ interface SidebarProps {
   /** Optional controlled open app id (used when other UI must drive the panel, e.g. CornerDock). */
   activeApp?: SidebarAppId | null;
   onActiveAppChange?: (id: SidebarAppId | null) => void;
+  /** Suppress rendering until persisted settings are loaded, so the sidebar's
+   *  first paint already has the correct pinned/unpinned position and never
+   *  flashes or animates out on reload. */
+  ready?: boolean;
 }
 
 interface RailButtonProps {
@@ -102,7 +106,7 @@ function RailButton({ app, isActive, onToggle, onHover }: RailButtonProps) {
   );
 }
 
-export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }: SidebarProps) {
+export default function Sidebar({ activeApp: controlledApp, onActiveAppChange, ready = true }: SidebarProps) {
   const dispatch = useDispatch<AppDispatch>();
   const settings = useSelector((state: RootState) => state.settings);
   const sidebarApps = settings.sidebarApps ?? {};
@@ -143,6 +147,13 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange }:
     (app) => !BOTTOM_APP_IDS.includes(app.id) && (sidebarApps[app.id] ?? true),
   );
   const bottomApps = APPS.filter((app) => BOTTOM_APP_IDS.includes(app.id));
+
+  // Wait for persisted settings before first paint: without this, the default
+  // `sidebarPinned: true` renders the sidebar on-screen, then hydration flips it
+  // to unpinned and the CSS transition kicks in — showing the visible sidebar
+  // and its hide animation on every reload. Skipping the first paint entirely
+  // means it mounts already in the off-screen position with nothing to animate.
+  if (!ready) return null;
 
   // When unpinned, the whole sidebar is tucked off-screen until hovered or a panel is open.
   const isRevealed = isPinned || isHovered || isOpen;

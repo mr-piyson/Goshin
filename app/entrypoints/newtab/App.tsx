@@ -197,7 +197,7 @@ export default function App() {
       {look.kind === "video" ? <LoopingVideo key={look.url} className="ntp-bg" src={look.url} /> : <div className="ntp-bg" style={{ background: look.css }} aria-hidden="true" />}
 
       {/* Collapsible Sidebar on screen edge with all apps + settings in one panel */}
-      <Sidebar activeApp={sidebarApp} onActiveAppChange={setSidebarApp} />
+      <Sidebar activeApp={sidebarApp} onActiveAppChange={setSidebarApp} ready={hydrated} />
 
       <TopBar
         tracks={
@@ -234,7 +234,7 @@ export default function App() {
   </div>
 )}
 
-      <main className={`ntp-scroll relative z-10 min-h-0 flex-1 overflow-y-auto transition-[padding] duration-300 ${settings.sidebarPosition === "left" && (settings.sidebarPinned ?? true) ? "pl-[60px]" : ""}`}>
+      <main className={`ntp-scroll relative z-10 min-h-0 flex-1 overflow-y-auto transition-[padding] duration-300 ${hydrated && settings.sidebarPosition === "left" && (settings.sidebarPinned ?? true) ? "pl-[60px]" : ""}`}>
         <div className="mx-auto flex min-h-[calc(100vh-9rem)] w-full max-w-6xl flex-col items-center justify-center gap-7 px-4 pb-24 pt-24 sm:px-6">
             <SearchWidget show={settings.widgets.search !== false} />
         </div>
@@ -248,7 +248,7 @@ export default function App() {
         </div>
       )}
 
-      <button type="button" onClick={openFocusTime} title="Focus time" className={`glass fixed bottom-2 z-30 flex items-center gap-1.5 rounded-full px-3 py-2 text-[11px] transition hover:bg-[color:var(--surface-strong)] ${settings.sidebarPosition === "left" && (settings.sidebarPinned ?? true) ? "left-[68px]" : "left-3"}`}>
+      <button type="button" onClick={openFocusTime} title="Focus time" className={`glass fixed bottom-2 z-30 flex items-center gap-1.5 rounded-full px-3 py-2 text-[11px] transition hover:bg-[color:var(--surface-strong)] ${hydrated && settings.sidebarPosition === "left" && (settings.sidebarPinned ?? true) ? "left-[68px]" : "left-3"}`}>
         <TimerIcon className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Focus time</span>
       </button>
