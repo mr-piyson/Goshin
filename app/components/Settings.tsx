@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setWidget, setSidebarApp, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setTopbarMusic, setTopbarLoop, setAll } from "@/store/settingsSlice";
+import { setWidget, setSidebarApp, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setTopbarMusic, setTopbarLoop, setTopbarStations, setAll } from "@/store/settingsSlice";
+import { DEFAULT_TOPBAR_STATIONS } from "@/store/settingsSlice";
+import type { Station } from "@/store/settingsSlice";
 import type { RootState, AppDispatch } from "@/store";
-import { CalendarIcon, MailIcon, TasksIcon, NotesIcon, HistoryIcon, TranslateIcon, GameIcon, HourglassIcon, GlobeIcon, PinIcon, SlidersIcon } from "./Icons";
+import { CalendarIcon, MailIcon, TasksIcon, NotesIcon, HistoryIcon, TranslateIcon, GameIcon, HourglassIcon, GlobeIcon, PinIcon, SlidersIcon, TrashIcon, PlusIcon } from "./Icons";
 import { Switch } from "./switch";
 import SettingsTabs from "./SettingsTabs";
 
@@ -29,6 +31,7 @@ const SETTINGS_TABS = [
   { id: "apps", label: "Apps" },
   { id: "sidebar", label: "Sidebar" },
   { id: "widgets", label: "Widgets" },
+  { id: "topbar", label: "Topbar" },
   { id: "general", label: "General" },
   { id: "data", label: "Data" },
 ];
@@ -36,6 +39,15 @@ const SETTINGS_TABS = [
 /** Shared easing so the tab indicator and the sliding pages animate in lockstep. */
 const EASE = "cubic-bezier(0.4, 0, 0.2, 1)";
 const DURATION = 250;
+
+/** Small music-note glyph used on radio station rows. */
+const StationIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+    <path d="M9 18V5l12-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="18" cy="16" r="3" />
+  </svg>
+);
 
 function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
@@ -94,6 +106,22 @@ export default function Settings() {
   const sidebarPosition = s.sidebarPosition ?? "left";
   const topbarMusic = s.topbarMusic ?? true;
   const topbarLoop = s.topbarLoop ?? true;
+  const stations: Station[] = Array.isArray(s.topbarStations) && s.topbarStations.length > 0 ? s.topbarStations : DEFAULT_TOPBAR_STATIONS;
+
+  // Add-radio-station form state.
+  const [stationTitle, setStationTitle] = useState("");
+  const [stationUrl, setStationUrl] = useState("");
+  const urlOk = /^https?:\/\/\S+$/i.test(stationUrl.trim());
+  const canAddStation = stationTitle.trim().length > 0 && urlOk;
+  const addStation = () => {
+    if (!canAddStation) return;
+    dispatch(setTopbarStations([...stations, { title: stationTitle.trim(), src: stationUrl.trim() }]));
+    setStationTitle("");
+    setStationUrl("");
+  };
+  const removeStation = (idx: number) => {
+    dispatch(setTopbarStations(stations.filter((_, i) => i !== idx)));
+  };
   const [activeTab, setActiveTab] = useState<string>("sidebar");
   const currentTab = SETTINGS_TABS.some((t) => t.id === activeTab) ? activeTab : SETTINGS_TABS[0]?.id ?? "sidebar";
   const currentTabIndex = Math.max(0, SETTINGS_TABS.findIndex((t) => t.id === currentTab));
@@ -254,8 +282,11 @@ export default function Settings() {
                 })}
               </div>
             </Section>
+          </TabPage>
 
-            <Section title="Top bar" description="Player controls for the bar at the top of the screen.">
+          {/* Top bar: music player + customizable radio stations */}
+          <TabPage id="topbar" active={currentTab === "topbar"}>
+            <Section title="Music player" description="Player controls for the bar at the top of the screen.">
               <div className="grid grid-cols-1 gap-2">
                 <label
                   className={`ui-tile flex cursor-pointer items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs transition ${
@@ -266,7 +297,7 @@ export default function Settings() {
                 >
                   <div className="min-w-0">
                     <span className="block truncate font-medium">Music player</span>
-                    <span className="block truncate text-[10px] ui-muted">SomaFM Groove Salad radio in the top bar</span>
+                    <span className="block truncate text-[10px] ui-muted">Radio stations in the top bar</span>
                   </div>
                   <Switch checked={topbarMusic} label="Top bar music" onChange={() => dispatch(setTopbarMusic(!topbarMusic))} />
                 </label>
@@ -284,6 +315,73 @@ export default function Settings() {
                   </div>
                   <Switch checked={topbarLoop} label="Top bar repeat" onChange={() => dispatch(setTopbarLoop(!topbarLoop))} />
                 </label>
+              </div>
+            </Section>
+
+            <Section title="Stations" description="Your playlist. The player cycles through these channels; add any direct audio stream you like.">
+              <div className="grid grid-cols-1 gap-2">
+                {stations.map((station, idx) => {
+                  return (
+                    <div
+                      key={`${station.src}-${idx}`}
+                      className="ui-tile flex items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] px-3 py-2 text-xs transition hover:bg-[color:var(--surface-strong)]"
+                    >
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-acbg-accent dark:text-accent/90">
+                          <StationIcon />
+                        </span>
+                        <div className="min-w-0">
+                          <span className="block truncate font-medium">{station.title}</span>
+                          <span className="block truncate text-[10px] ui-muted">{station.src}</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeStation(idx)}
+                        aria-label={`Remove ${station.title}`}
+                        title="Remove station"
+                        className="ui-muted flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition hover:bg-white/10 hover:text-red-400"
+                      >
+                        <TrashIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+
+                {/* Add station form */}
+                <div className="mt-1 rounded-xl border border-[color:var(--border)] p-3">
+                  <span className="block text-xs font-medium">Add a station</span>
+                  <div className="mt-2 space-y-2">
+                    <input
+                      type="text"
+                      value={stationTitle}
+                      onChange={(e) => setStationTitle(e.target.value)}
+                      placeholder="Station name (e.g. Lofi Beats)"
+                      className="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--field)] px-2.5 py-1.5 text-xs text-[color:var(--text)] outline-none placeholder:text-[color:var(--muted)] focus:ring-2 focus:ring-acbg-accent/60"
+                    />
+                    <input
+                      type="url"
+                      value={stationUrl}
+                      onChange={(e) => setStationUrl(e.target.value)}
+                      placeholder="Stream URL (http/https, e.g. https://ice1.somafm.com/...)"
+                      className="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--field)] px-2.5 py-1.5 text-xs text-[color:var(--text)] outline-none placeholder:text-[color:var(--muted)] focus:ring-2 focus:ring-acbg-accent/60"
+                    />
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`text-[10px] ${stationUrl && !urlOk ? "text-red-400" : "ui-muted"}`}>
+                        {stationUrl && !urlOk ? "Enter a valid http/https stream URL" : "Direct audio (.mp3/.aac/ice/shoutcast) works best"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={addStation}
+                        disabled={!canAddStation}
+                        className="flex shrink-0 items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <PlusIcon className="h-3.5 w-3.5" />
+                        Add station
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </Section>
           </TabPage>

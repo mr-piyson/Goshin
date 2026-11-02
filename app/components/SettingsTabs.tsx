@@ -23,8 +23,9 @@ export default function DraggableTabs({ tabs, active, onSelect }: DraggableTabsP
         <Tabs
           value={active}
           onChange={(_, next) => onSelect(String(next))}
-          variant="standard"
-          centered
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
           aria-label="Settings categories"
           sx={{
             minHeight: 36,
@@ -38,6 +39,14 @@ export default function DraggableTabs({ tabs, active, onSelect }: DraggableTabsP
             "& .MuiTabs-flexContainer": {
               gap: "4px",
             },
+            "& .MuiTabScrollButton-root": {
+              width: 24,
+              minWidth: 24,
+              color: "var(--muted)",
+              opacity: 1,
+              "&:hover": { color: "var(--text)" },
+              "&.Mui-disabled": { opacity: 0.25 },
+            },
           }}
         >
           {tabs.map((tab) => (
@@ -48,8 +57,8 @@ export default function DraggableTabs({ tabs, active, onSelect }: DraggableTabsP
               disableRipple
               sx={{
                 minHeight: 36,
-                minWidth: 52,
-                px: 1.5,
+                minWidth: 48,
+                px: 1.25,
                 fontSize: 12,
                 textTransform: "none",
                 fontWeight: active === tab.id ? 600 : 500,

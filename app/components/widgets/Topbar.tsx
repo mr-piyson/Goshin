@@ -18,6 +18,7 @@ export interface Track {
 /** Built-in playlist: free ambient internet radio (great for focus). */
 export const TOPBAR_TRACKS: Track[] = [
   { title: 'Groove Salad', artist: 'SomaFM', src: 'https://ice1.somafm.com/groovesalad-128-mp3' },
+  { title: 'Radio Swiss Jazz', artist: 'SRG SSR', src: 'http://livestreaming-node-1.srg-ssr.ch/srgssr/rsj/mp3/128' },
 ];
 
 interface TopBarProps {
@@ -168,6 +169,11 @@ function useMusicPlayer(tracks: Track[]) {
   const [loop, setLoopState] = useState(true);
 
   const track: Track | undefined = tracks[index];
+
+  // Keep the index valid when the playlist is edited (stations removed in settings).
+  useEffect(() => {
+    if (index >= tracks.length) setIndex(0);
+  }, [tracks.length, index]);
 
   useEffect(() => {
     const a = new Audio();

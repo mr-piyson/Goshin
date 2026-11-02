@@ -199,7 +199,13 @@ export default function App() {
       {/* Collapsible Sidebar on screen edge with all apps + settings in one panel */}
       <Sidebar activeApp={sidebarApp} onActiveAppChange={setSidebarApp} />
 
-      <TopBar tracks={settings.topbarMusic ?? true ? TOPBAR_TRACKS : []} />
+      <TopBar
+        tracks={
+          settings.topbarMusic ?? true
+            ? settings.topbarStations?.length ? settings.topbarStations : TOPBAR_TRACKS
+            : []
+        }
+      />
 
 {hydrated && (
   <div className="m-2 fixed right-0 top-0 z-30">

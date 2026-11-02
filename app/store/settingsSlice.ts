@@ -12,7 +12,21 @@ export interface SettingsState {
   theme: "dark" | "light" | "system";
   topbarMusic: boolean;
   topbarLoop: boolean;
+  topbarStations: Station[];
 }
+
+/** One radio channel in the top bar playlist. */
+export interface Station {
+  title: string;
+  artist?: string;
+  /** Direct audio stream URL (http/https). */
+  src: string;
+}
+
+export const DEFAULT_TOPBAR_STATIONS: Station[] = [
+  { title: "Groove Salad", artist: "SomaFM", src: "https://ice1.somafm.com/groovesalad-128-mp3" },
+  { title: "Radio Swiss Jazz", artist: "SRG SSR", src: "http://livestreaming-node-1.srg-ssr.ch/srgssr/rsj/mp3/128" },
+];
 
 const DEFAULT_SIDEBAR_APPS: Record<string, boolean> = {
   calendar: true,
@@ -46,6 +60,7 @@ const initial: SettingsState = {
   theme: "dark",
   topbarMusic: true,
   topbarLoop: true,
+  topbarStations: DEFAULT_TOPBAR_STATIONS,
 };
 
 const slice = createSlice({
@@ -89,6 +104,9 @@ const slice = createSlice({
     setTopbarLoop: (s, a: PayloadAction<boolean>) => {
       s.topbarLoop = a.payload;
     },
+    setTopbarStations: (s, a: PayloadAction<Station[]>) => {
+      s.topbarStations = a.payload;
+    },
     setAll: (s, a: PayloadAction<Partial<SettingsState>>) => {
       Object.assign(s, a.payload);
       if (!s.sidebarApps) {
@@ -109,9 +127,12 @@ const slice = createSlice({
       if (s.topbarLoop === undefined) {
         s.topbarLoop = true;
       }
+      if (!Array.isArray(s.topbarStations) || s.topbarStations.length === 0) {
+        s.topbarStations = DEFAULT_TOPBAR_STATIONS;
+      }
     },
   },
 });
 
-export const { setWidget, setSidebarApp, setSidebarApps, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setTopbarMusic, setTopbarLoop, setAll } = slice.actions;
+export const { setWidget, setSidebarApp, setSidebarApps, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setTopbarMusic, setTopbarLoop, setTopbarStations, setAll } = slice.actions;
 export default slice.reducer;
