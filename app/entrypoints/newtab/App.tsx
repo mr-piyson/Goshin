@@ -23,7 +23,6 @@ import TimeWidget from "@/components/widgets/TimeWidget";
 import MotivationWidget from "@/components/widgets/MotivationWidget";
 import LifeTimerWidget from "@/components/widgets/LifeTimerWidget";
 import Panel from "@/components/Panel";
-import MorePanel, { type AppItem } from "@/components/MorePanel";
 import CornerDock from "@/components/CornerDock";
 import Collapsible, {
   COLLAPSIBLE_EXIT_DURATION,
@@ -55,24 +54,12 @@ const APP_VIEWS: Record<string, AppView> = {
   account: { title: "Account & sync", render: () => <Account /> },
 };
 
-const MORE_APPS: AppItem[] = [
-  { id: "notes", label: "Notes", hint: "Quick notes stored on this device" },
-  { id: "tasks", label: "Tasks", hint: "A small to-do list" },
-  { id: "calendar", label: "Calendar", hint: "Your Google Calendar" },
-  { id: "gmail", label: "Gmail", hint: "Your inbox" },
-  { id: "history", label: "History", hint: "Recently visited pages" },
-  { id: "topSites", label: "Top sites", hint: "Your most visited sites" },
-  { id: "translator", label: "Translator", hint: "Translate text to English" },
-  { id: "lifeTimer", label: "Life timer", hint: "Years lived and years left" },
-];
-
 const HERO_IDS = new Set(["time", "weather", "motivation", "search", "launchpad"]);
 const PANEL_WIDTH: Record<string, string> = {
   background: "max-w-md",
-  more: "max-w-sm",
 };
 
-type PanelId = "background" | "more" | "account" | "notes" | "tasks" | "calendar" | "gmail" | "history" | "topSites" | "translator" | "lifeTimer";
+type PanelId = "background" | "account" | "notes" | "tasks" | "calendar" | "gmail" | "history" | "topSites" | "translator" | "lifeTimer";
 
 function usePrefersDark() {
   const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -153,34 +140,12 @@ export default function App() {
     window.location.href = browser.runtime.getURL("/focus-time.html");
   }, []);
 
-  const openSidePanel = useCallback(async () => {
-    try {
-      const sidePanel = (browser as any).sidePanel;
-      if (!sidePanel?.open) throw new Error("Side panel is not supported in this browser");
-      const win = await browser.windows.getCurrent();
-      await sidePanel.open({ windowId: win.id });
-      setPanel(null);
-    } catch (error) {
-      console.warn("[newtab] could not open side panel", error);
-    }
-  }, []);
-
-  const openFromMore = useCallback(
-    (id: string) => {
-      if (id === "focus-time") openFocusTime();
-      else if (id === "side-panel") void openSidePanel();
-      else setPanel(id as PanelId);
-    },
-    [openFocusTime, openSidePanel],
-  );
-
-
-
   const look = resolveBackground(background.current, background.custom);
   const appView = panel && APP_VIEWS[panel] ? APP_VIEWS[panel] : null;
   const weatherVisible = settings.widgets.weather !== false;
   const timeVisible = settings.widgets.time !== false;
   const motivationVisible = settings.widgets.motivation !== false;
+  const topbarVisible = settings.widgets.topbar !== false;
   const cornerMounted = usePresence(
     weatherVisible || timeVisible,
     COLLAPSIBLE_EXIT_DURATION,
@@ -199,13 +164,15 @@ export default function App() {
       {/* Collapsible Sidebar on screen edge with all apps + settings in one panel */}
       <Sidebar activeApp={sidebarApp} onActiveAppChange={setSidebarApp} ready={hydrated} />
 
-      <TopBar
-        tracks={
-          settings.topbarMusic ?? true
-            ? settings.topbarStations?.length ? settings.topbarStations : TOPBAR_TRACKS
-            : []
-        }
-      />
+      {topbarVisible && (
+        <TopBar
+          tracks={
+            settings.topbarMusic ?? true
+              ? settings.topbarStations?.length ? settings.topbarStations : TOPBAR_TRACKS
+              : []
+          }
+        />
+      )}
 
 {hydrated && (
   <div className="m-2 fixed right-0 top-0 z-30">
@@ -234,7 +201,7 @@ export default function App() {
   </div>
 )}
 
-      <main className={`ntp-scroll relative z-10 min-h-0 flex-1 overflow-y-auto transition-[padding] duration-300 ${hydrated && settings.sidebarPosition === "left" && (settings.sidebarPinned ?? true) ? "pl-[60px]" : ""}`}>
+      <main className={`ntp-scroll relative z-10 min-h-0 flex-1 overflow-y-auto transition-[padding] duration-300 ${settings.sidebarPosition === "left" && (settings.sidebarPinned ?? true) ? "pl-[60px]" : ""}`}>
         <div className="mx-auto flex min-h-[calc(100vh-9rem)] w-full max-w-6xl flex-col items-center justify-center gap-7 px-4 pb-24 pt-24 sm:px-6">
             <SearchWidget show={settings.widgets.search !== false} />
         </div>
@@ -248,23 +215,18 @@ export default function App() {
         </div>
       )}
 
-      <button type="button" onClick={openFocusTime} title="Focus time" className={`glass fixed bottom-2 z-30 flex items-center gap-1.5 rounded-full px-3 py-2 text-[11px] transition hover:bg-[color:var(--surface-strong)] ${hydrated && settings.sidebarPosition === "left" && (settings.sidebarPinned ?? true) ? "left-[68px]" : "left-3"}`}>
+      <button type="button" onClick={openFocusTime} title="Focus time" className={`glass fixed bottom-2 z-30 flex items-center gap-1.5 rounded-full px-3 py-2 text-[11px] transition hover:bg-[color:var(--surface-strong)] ${settings.sidebarPosition === "left" && (settings.sidebarPinned ?? true) ? "left-[68px]" : "left-3"}`}>
         <TimerIcon className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Focus time</span>
       </button>
 
-      <CornerDock onOpenBackground={() => setPanel("background")} onOpenMore={() => setPanel("more")} onOpenSettings={() => setSidebarApp("settings")} />
+      <CornerDock onOpenBackground={() => setPanel("background")} onOpenSettings={() => setSidebarApp("settings")} />
 
       <Onboarding />
 
       {panel === "background" && (
         <Panel title="Backgrounds" subtitle="Pick a look for your new tab" onClose={() => setPanel(null)} width={PANEL_WIDTH.background}>
           <BackgroundGallery />
-        </Panel>
-      )}
-      {panel === "more" && (
-        <Panel title="More" subtitle="Apps and quick actions" onClose={() => setPanel(null)} width={PANEL_WIDTH.more}>
-          <MorePanel apps={MORE_APPS} onOpen={openFromMore} />
         </Panel>
       )}
       {appView && (

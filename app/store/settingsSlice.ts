@@ -46,6 +46,7 @@ const DEFAULT_WIDGETS: Record<string, boolean> = {
   motivation: true,
   search: true,
   launchpad: true,
+  topbar: true,
 };
 
 const initial: SettingsState = {

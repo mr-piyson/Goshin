@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setWidget } from "@/store/settingsSlice";
 import type { AppDispatch, RootState } from "@/store";
-import { GearIcon, ImageIcon, MoreIcon, SlidersIcon } from "./Icons";
+import { GearIcon, ImageIcon, SlidersIcon } from "./Icons";
 import { Switch } from "./switch";
 
 const VISIBILITY_OPTIONS = [
@@ -10,15 +10,15 @@ const VISIBILITY_OPTIONS = [
   { id: "time", label: "Time and date" },
   { id: "weather", label: "Weather" },
   { id: "search", label: "Search Bar" },
+  { id: "topbar", label: "Topbar" },
 ];
 
 interface CornerDockProps {
   onOpenBackground: () => void;
-  onOpenMore: () => void;
   onOpenSettings: () => void;
 }
 
-export default function CornerDock({ onOpenBackground, onOpenMore, onOpenSettings }: CornerDockProps) {
+export default function CornerDock({ onOpenBackground, onOpenSettings }: CornerDockProps) {
   const dispatch = useDispatch<AppDispatch>();
   const widgets = useSelector((s: RootState) => s.settings.widgets);
   const [open, setOpen] = useState(false);
@@ -65,9 +65,6 @@ export default function CornerDock({ onOpenBackground, onOpenMore, onOpenSetting
         </button>
         <button type="button" className="inline-flex items-center justify-center h-8 w-8 rounded-[0.5rem] hover:bg-surface-strong" title="Backgrounds" aria-label="Backgrounds" onClick={onOpenBackground}>
           <ImageIcon className="h-[18px] w-[18px]" />
-        </button>
-        <button type="button" className="inline-flex items-center justify-center h-8 w-8 rounded-[0.5rem] hover:bg-surface-strong" title="More" aria-label="More" onClick={onOpenMore}>
-          <MoreIcon className="h-[18px] w-[18px]" />
         </button>
         <button type="button" className="inline-flex items-center justify-center h-8 w-8 rounded-[0.5rem] hover:bg-surface-strong" title="Settings" aria-label="Settings" onClick={onOpenSettings}>
           <GearIcon className="h-[18px] w-[18px]" />
