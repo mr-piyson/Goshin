@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setWidget, setSidebarApp, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setAll } from "@/store/settingsSlice";
+import { setWidget, setSidebarApp, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setTopbarMusic, setTopbarLoop, setAll } from "@/store/settingsSlice";
 import type { RootState, AppDispatch } from "@/store";
 import { CalendarIcon, MailIcon, TasksIcon, NotesIcon, HistoryIcon, TranslateIcon, GameIcon, HourglassIcon, GlobeIcon, PinIcon, SlidersIcon } from "./Icons";
 import { Switch } from "./switch";
@@ -92,6 +92,8 @@ export default function Settings() {
   const sidebarApps = s.sidebarApps ?? {};
   const sidebarPinned = s.sidebarPinned ?? true;
   const sidebarPosition = s.sidebarPosition ?? "left";
+  const topbarMusic = s.topbarMusic ?? true;
+  const topbarLoop = s.topbarLoop ?? true;
   const [activeTab, setActiveTab] = useState<string>("sidebar");
   const currentTab = SETTINGS_TABS.some((t) => t.id === activeTab) ? activeTab : SETTINGS_TABS[0]?.id ?? "sidebar";
   const currentTabIndex = Math.max(0, SETTINGS_TABS.findIndex((t) => t.id === currentTab));
@@ -250,6 +252,38 @@ export default function Settings() {
                     </label>
                   );
                 })}
+              </div>
+            </Section>
+
+            <Section title="Top bar" description="Player controls for the bar at the top of the screen.">
+              <div className="grid grid-cols-1 gap-2">
+                <label
+                  className={`ui-tile flex cursor-pointer items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs transition ${
+                    topbarMusic
+                      ? "border-[color:var(--border)]"
+                      : "border-transparent opacity-70 hover:opacity-100"
+                  } hover:bg-[color:var(--surface-strong)]`}
+                >
+                  <div className="min-w-0">
+                    <span className="block truncate font-medium">Music player</span>
+                    <span className="block truncate text-[10px] ui-muted">SomaFM Groove Salad radio in the top bar</span>
+                  </div>
+                  <Switch checked={topbarMusic} label="Top bar music" onChange={() => dispatch(setTopbarMusic(!topbarMusic))} />
+                </label>
+
+                <label
+                  className={`ui-tile flex cursor-pointer items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs transition ${
+                    topbarLoop
+                      ? "border-[color:var(--border)]"
+                      : "border-transparent opacity-70 hover:opacity-100"
+                  } hover:bg-[color:var(--surface-strong)]`}
+                >
+                  <div className="min-w-0">
+                    <span className="block truncate font-medium">Repeat</span>
+                    <span className="block truncate text-[10px] ui-muted">Keep the music playing forever</span>
+                  </div>
+                  <Switch checked={topbarLoop} label="Top bar repeat" onChange={() => dispatch(setTopbarLoop(!topbarLoop))} />
+                </label>
               </div>
             </Section>
           </TabPage>

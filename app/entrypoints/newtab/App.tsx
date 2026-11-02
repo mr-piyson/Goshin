@@ -34,7 +34,7 @@ import { SearchIcon, TimerIcon } from "@/components/Icons";
 import type { RootState } from "@/store";
 import Fade from "@/components/animations/fade";
 import SearchWidget from "@/components/widgets/SearchWidget";
-import TopBar from "@/components/widgets/Topbar";
+import TopBar, { TOPBAR_TRACKS } from "@/components/widgets/Topbar";
 
 
 
@@ -199,7 +199,7 @@ export default function App() {
       {/* Collapsible Sidebar on screen edge with all apps + settings in one panel */}
       <Sidebar activeApp={sidebarApp} onActiveAppChange={setSidebarApp} />
 
-      <TopBar />
+      <TopBar tracks={settings.topbarMusic ?? true ? TOPBAR_TRACKS : []} />
 
 {hydrated && (
   <div className="m-2 fixed right-0 top-0 z-30">

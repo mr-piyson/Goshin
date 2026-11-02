@@ -15,6 +15,11 @@ export interface Track {
   cover?: string;
 }
 
+/** Built-in playlist: free ambient internet radio (great for focus). */
+export const TOPBAR_TRACKS: Track[] = [
+  { title: 'Groove Salad', artist: 'SomaFM', src: 'https://ice1.somafm.com/groovesalad-128-mp3' },
+];
+
 interface TopBarProps {
   /** Playlist for the built-in music player. */
   tracks?: Track[];
@@ -109,6 +114,14 @@ const ResetIcon = svg(
     <path d="M3 3v5h5" />
   </>,
 );
+const RepeatIcon = svg(
+  <>
+    <path d="M17 2l4 4-4 4" />
+    <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+    <path d="M7 22l-4-4 4-4" />
+    <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+  </>,
+);
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                   */
@@ -152,6 +165,7 @@ function useMusicPlayer(tracks: Track[]) {
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(0.8);
+  const [loop, setLoopState] = useState(true);
 
   const track: Track | undefined = tracks[index];
 
@@ -159,13 +173,23 @@ function useMusicPlayer(tracks: Track[]) {
     const a = new Audio();
     a.preload = 'metadata';
     a.volume = 0.8;
+    a.loop = loop; // infinite play by default (also loops a single track)
     audioRef.current = a;
 
     const onTime = () => setTime(a.currentTime);
     const onMeta = () => setDuration(a.duration || 0);
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
-    const onEnd = () => setIndex((i) => (countRef.current ? (i + 1) % countRef.current : 0));
+    const onEnd = () => {
+      if (countRef.current > 1) {
+        setIndex((i) => (i + 1) % countRef.current);
+      } else if (wantPlay.current) {
+        // Repeat off + only one track: restart manually (a.loop is off so the
+        // browser fires 'ended'); re-setting the same index wouldn't replay.
+        a.currentTime = 0;
+        a.play().catch(() => setPlaying(false));
+      }
+    };
 
     a.addEventListener('timeupdate', onTime);
     a.addEventListener('loadedmetadata', onMeta);
@@ -182,7 +206,13 @@ function useMusicPlayer(tracks: Track[]) {
       a.removeEventListener('ended', onEnd);
       a.src = '';
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Keep the element in sync with the repeat toggle.
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.loop = loop;
+  }, [loop]);
 
   useEffect(() => {
     const a = audioRef.current;
@@ -228,7 +258,15 @@ function useMusicPlayer(tracks: Track[]) {
     setVolumeState(v);
   }, []);
 
-  return { track, playing, time, duration, volume, toggle, next, prev, seek, setVolume };
+  const setLoop = useCallback(
+    (v: boolean) => {
+      setLoopState(v);
+      if (audioRef.current) audioRef.current.loop = v;
+    },
+    [],
+  );
+
+  return { track, playing, time, duration, volume, loop, toggle, next, prev, seek, setVolume, setLoop };
 }
 type MusicCtx = ReturnType<typeof useMusicPlayer>;
 
@@ -302,6 +340,9 @@ function MusicPanel({ m, hasTracks }: { m: MusicCtx; hasTracks: boolean }) {
       </p>
     );
   }
+  // Live streams (SomaFM radio) report no finite duration: no seek, show a badge.
+  const isLive = !Number.isFinite(m.duration) || m.duration <= 0;
+
   return (
     <div className="flex flex-col gap-4 px-4 pb-4 pt-2">
       <div className="flex items-center gap-3">
@@ -318,22 +359,32 @@ function MusicPanel({ m, hasTracks }: { m: MusicCtx; hasTracks: boolean }) {
         </div>
       </div>
 
-      <div>
-        <input
-          type="range"
-          min={0}
-          max={m.duration || 0}
-          step={0.1}
-          value={Math.min(m.time, m.duration || 0)}
-          onChange={(e) => m.seek(Number(e.target.value))}
-          className="h-1 w-full cursor-pointer accent-white"
-          aria-label="Seek"
-        />
-        <div className="ui-muted mt-1 flex justify-between text-[10px] tabular-nums">
-          <span>{fmt(m.time)}</span>
-          <span>{fmt(m.duration)}</span>
+      {isLive ? (
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1 rounded-md bg-white/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
+            Live
+          </span>
+          <span className="ui-muted text-[10px]">Internet radio · seek unavailable</span>
         </div>
-      </div>
+      ) : (
+        <div>
+          <input
+            type="range"
+            min={0}
+            max={m.duration || 0}
+            step={0.1}
+            value={Math.min(m.time, m.duration || 0)}
+            onChange={(e) => m.seek(Number(e.target.value))}
+            className="h-1 w-full cursor-pointer accent-white"
+            aria-label="Seek"
+          />
+          <div className="ui-muted mt-1 flex justify-between text-[10px] tabular-nums">
+            <span>{fmt(m.time)}</span>
+            <span>{fmt(m.duration)}</span>
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between">
         <div className="flex w-24 items-center gap-1.5">
@@ -368,7 +419,11 @@ function MusicPanel({ m, hasTracks }: { m: MusicCtx; hasTracks: boolean }) {
           </IconBtn>
         </div>
 
-        <div className="w-24" />
+        <div className="flex w-24 justify-end">
+          <IconBtn label={m.loop ? 'Repeat on' : 'Repeat off'} onClick={() => m.setLoop(!m.loop)}>
+            <RepeatIcon className={cn('h-4 w-4', m.loop && 'text-[color:var(--text)]')} />
+          </IconBtn>
+        </div>
       </div>
     </div>
   );
@@ -483,7 +538,7 @@ function usePinned(controlled?: boolean, onChange?: (v: boolean) => void) {
 /* -------------------------------------------------------------------------- */
 
 export default function TopBar({
-  tracks = [],
+  tracks = TOPBAR_TRACKS,
   activeTool: controlled,
   onActiveToolChange,
   pinned: pinnedProp,

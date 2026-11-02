@@ -10,6 +10,8 @@ export interface SettingsState {
   weatherUnit: "C" | "F";
   searchEngine: "google" | "bing" | "duckduckgo";
   theme: "dark" | "light" | "system";
+  topbarMusic: boolean;
+  topbarLoop: boolean;
 }
 
 const DEFAULT_SIDEBAR_APPS: Record<string, boolean> = {
@@ -42,6 +44,8 @@ const initial: SettingsState = {
   weatherUnit: "C",
   searchEngine: "google",
   theme: "dark",
+  topbarMusic: true,
+  topbarLoop: true,
 };
 
 const slice = createSlice({
@@ -79,6 +83,12 @@ const slice = createSlice({
     setTheme: (s, a: PayloadAction<SettingsState["theme"]>) => {
       s.theme = a.payload;
     },
+    setTopbarMusic: (s, a: PayloadAction<boolean>) => {
+      s.topbarMusic = a.payload;
+    },
+    setTopbarLoop: (s, a: PayloadAction<boolean>) => {
+      s.topbarLoop = a.payload;
+    },
     setAll: (s, a: PayloadAction<Partial<SettingsState>>) => {
       Object.assign(s, a.payload);
       if (!s.sidebarApps) {
@@ -93,9 +103,15 @@ const slice = createSlice({
       if (!s.widgets) {
         s.widgets = { ...DEFAULT_WIDGETS };
       }
+      if (s.topbarMusic === undefined) {
+        s.topbarMusic = true;
+      }
+      if (s.topbarLoop === undefined) {
+        s.topbarLoop = true;
+      }
     },
   },
 });
 
-export const { setWidget, setSidebarApp, setSidebarApps, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setAll } = slice.actions;
+export const { setWidget, setSidebarApp, setSidebarApps, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setTopbarMusic, setTopbarLoop, setAll } = slice.actions;
 export default slice.reducer;
