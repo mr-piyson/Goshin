@@ -132,16 +132,67 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange, r
   const [isHovered, setIsHovered] = useState(false);
   const [tooltip, setTooltip] = useState<{ label: string; y: number } | null>(null);
 
-  // Close on Escape (click-outside intentionally not wired up)
+  // Delay hiding after the pointer leaves, so small slips off the sidebar edge
+  // don't immediately tuck it away. Re-entering cancels the pending hide.
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelHide = () => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+  };
+  const scheduleHide = () => {
+    cancelHide();
+    hideTimerRef.current = setTimeout(() => {
+      hideTimerRef.current = null;
+      setIsHovered(false);
+    }, 800);
+  };
+  useEffect(() => cancelHide, []);
+
+  // Ref for click-outside detection: everything rendered inside this box (rail,
+  // open panel, pin/close buttons) counts as "inside" and won't force-close.
+  const asideRef = useRef<HTMLElement | null>(null);
+
+  // Close on Escape, and force close when clicking anywhere outside the sidebar.
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setActiveApp(null);
     };
+    const onPointerDown = (e: MouseEvent) => {
+      // Pinned sidebar is always visible and click-outside shouldn't drop its content;
+      // force close only applies to the unpinned auto-hide behavior.
+      if (isPinned) return;
+      const target = e.target as Node;
+      if (asideRef.current && asideRef.current.contains(target)) return;
+      // Force close: drop the open panel and any pending hover state.
+      cancelHide();
+      setActiveApp(null);
+      setIsHovered(false);
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('mousedown', onPointerDown);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('mousedown', onPointerDown);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, isPinned]);
+
+  // Unpinned sidebar only: when the cursor leaves the browser window entirely,
+  // the aside's mouseleave can be skipped (fast exit, gone via keyboard, etc.)
+  // and the sidebar stays revealed. Listen for the window exit instead.
+  useEffect(() => {
+    if (isPinned) return;
+    const onMouseOut = (e: MouseEvent) => {
+      // relatedTarget is null only when the pointer left the window itself.
+      if (e.relatedTarget === null && !isOpen) scheduleHide();
+    };
+    window.addEventListener('mouseout', onMouseOut);
+    return () => window.removeEventListener('mouseout', onMouseOut);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPinned, isOpen]);
 
   const mainApps = APPS.filter(
     (app) => !BOTTOM_APP_IDS.includes(app.id) && (sidebarApps[app.id] ?? true),
@@ -163,7 +214,10 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange, r
       {/* Unpinned edge hover trigger */}
       {!isPinned && (
         <div
-          onMouseEnter={() => setIsHovered(true)}
+          onMouseEnter={() => {
+            cancelHide();
+            setIsHovered(true);
+          }}
           title="Hover to show sidebar"
           className={cn(
             'fixed bottom-0 top-0 z-40 w-3 cursor-pointer transition-colors duration-200 hover:bg-accent/20',
@@ -188,8 +242,10 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange, r
                   so it looks like it slides behind the rail.
       */}
       <aside
+        ref={asideRef}
         aria-label="Apps sidebar"
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={cancelHide}
+        onMouseLeave={scheduleHide}
         className={cn(
           'glass  fixed bottom-2 top-2 z-50 flex overflow-hidden rounded-2xl transition-all duration-300 ease-out',
           isLeft ? 'left-2 flex-row' : 'right-2 flex-row-reverse',
