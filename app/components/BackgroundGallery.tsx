@@ -6,18 +6,11 @@ import { CheckIcon, ImageIcon, TrashIcon, UploadIcon } from './Icons';
 import LoopingVideo from './LoopingVideo';
 import type { RootState, AppDispatch } from '@/store';
 
-type Tab = BackgroundGroup | 'custom';
+export type Tab = BackgroundGroup | 'custom';
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'cover', label: 'Galleries' },
-  { id: 'gradients', label: 'Gradients' },
-  { id: 'custom', label: 'My background' },
-];
-
-export default function BackgroundGallery() {
+export default function BackgroundGallery({ tab }: { tab: Tab }) {
   const dispatch = useDispatch<AppDispatch>();
   const bg = useSelector((state: RootState) => state.background);
-  const [tab, setTab] = useState<Tab>('cover');
   const [dragging, setDragging] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -51,25 +44,10 @@ export default function BackgroundGallery() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex rounded-full border border-[color:var(--border)] p-0.5">
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setTab(item.id)}
-            className={`flex-1 rounded-full px-2.5 py-1.5 text-xs transition ${
-              tab === item.id ? '' : 'ui-muted hover:text-[color:var(--text)]'
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-
       {tab !== 'custom' && (
         <>
           {items.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-3 gap-2.5">
               {items.map((item) => {
                 const active = bg.current === item.id;
                 return (

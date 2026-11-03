@@ -10,7 +10,7 @@ import { resolveBackground } from "@/lib/backgrounds";
 import WeatherWidget from "@/components/widgets/WeatherWidget";
 import Notes from "@/components/Notes";
 import Tasks from "@/components/Tasks";
-import BackgroundGallery from "@/components/BackgroundGallery";
+import BackgroundDialog from "@/components/BackgroundDialog";
 import LoopingVideo from "@/components/LoopingVideo";
 import Translator from "@/components/Translator";
 import TopSites from "@/components/TopSites";
@@ -55,9 +55,6 @@ const APP_VIEWS: Record<string, AppView> = {
 };
 
 const HERO_IDS = new Set(["time", "weather", "motivation", "search", "launchpad"]);
-const PANEL_WIDTH: Record<string, string> = {
-  background: "max-w-md",
-};
 
 type PanelId = "background" | "account" | "notes" | "tasks" | "calendar" | "gmail" | "history" | "topSites" | "translator" | "lifeTimer";
 
@@ -224,11 +221,7 @@ export default function App() {
 
       <Onboarding />
 
-      {panel === "background" && (
-        <Panel title="Backgrounds" subtitle="Pick a look for your new tab" onClose={() => setPanel(null)} width={PANEL_WIDTH.background}>
-          <BackgroundGallery />
-        </Panel>
-      )}
+      <BackgroundDialog open={panel === "background"} onClose={() => setPanel(null)} />
       {appView && (
         <Panel title={appView.title} onClose={() => setPanel(null)} width="max-w-2xl">
           {appView.render()}

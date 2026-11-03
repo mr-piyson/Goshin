@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { useDispatch, useSelector } from "react-redux";
 import { setWidget } from "@/store/settingsSlice";
 import type { AppDispatch, RootState } from "@/store";
@@ -63,7 +64,7 @@ export default function CornerDock({ onOpenBackground, onOpenSettings }: CornerD
   );
 
   return (
-    <div ref={rootRef} className="fixed bottom-2 right-2 z-40 flex flex-col items-end gap-2">
+    <div ref={rootRef} className="fixed bottom-2 right-2 z-40 flex flex-col-reverse items-end gap-2">
       <div className="glass flex items-center gap-1 rounded-2xl p-1 transition-colors">
         <button
           ref={toggleRef}
@@ -86,14 +87,24 @@ export default function CornerDock({ onOpenBackground, onOpenSettings }: CornerD
         </button>
       </div>
 
-      {open && (
-        <div
-          ref={popoverRef}
-          id={popoverId}
-          role="group"
-          aria-labelledby={`${popoverId}-title`}
-          className="glass w-60 rounded-2xl p-4 text-left shadow-2xl"
-        >
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            ref={popoverRef}
+            id={popoverId}
+            role="group"
+            aria-labelledby={`${popoverId}-title`}
+            className="glass w-60 rounded-2xl p-4 text-left shadow-2xl"
+            style={{ transformOrigin: "bottom right" }}
+            initial={{ opacity: 0, scale: 0.97, y: 4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{
+              opacity: 0,
+              scale: 0.97,
+              transition: { duration: 0.15, ease: "easeIn" },
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 14, mass: 0.9 }}
+          >
           <div id={`${popoverId}-title`} className="text-[11px] font-semibold uppercase tracking-wider ui-muted">
             Widgets visibility
           </div>
@@ -112,8 +123,9 @@ export default function CornerDock({ onOpenBackground, onOpenSettings }: CornerD
               );
             })}
           </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
