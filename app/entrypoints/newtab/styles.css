@@ -219,6 +219,25 @@ body {
   object-position: center;
 }
 
+.ntp-bg-fade-in {
+  animation: ntp-bg-fade-in 600ms ease-in-out both;
+}
+
+@keyframes ntp-bg-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ntp-bg-fade-in {
+    animation: none;
+  }
+}
+
 /* Branded fallback shown when the selected background is missing or fails. */
 .ntp-fallback {
   display: grid;

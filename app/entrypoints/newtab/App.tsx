@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { browser } from "wxt/browser";
 import { setAll as setSettings } from "@/store/settingsSlice";
@@ -160,7 +160,10 @@ export default function App() {
     window.location.href = browser.runtime.getURL("/focus-time.html");
   }, []);
 
-  const look = resolveBackground(background.current, background.custom);
+  const look = useMemo(
+    () => resolveBackground(background.current, background.custom),
+    [background.current, background.custom],
+  );
   const appView = panel && APP_VIEWS[panel] ? APP_VIEWS[panel] : null;
   const weatherVisible = settings.widgets.weather !== false;
   const timeVisible = settings.widgets.time !== false;
