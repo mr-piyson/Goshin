@@ -6,7 +6,11 @@ export interface SystemBackground {
   group: BackgroundGroup;
   /** CSS background value (images use url(), gradients use linear-gradient). */
   css: string;
+  /** Image source for image backgrounds (used for reliable load/error handling). */
+  src?: string;
   video?: string;
+  /** First-frame still shown while the video decodes on first paint. */
+  poster?: string;
 }
 
 export const GROUP_LABELS: Record<BackgroundGroup, string> = {
@@ -14,29 +18,31 @@ export const GROUP_LABELS: Record<BackgroundGroup, string> = {
   gradients: 'Gradients',
 };
 
+const imageCss = (src: string) => `url('${src}') center/cover no-repeat`;
+
 export const SYSTEM_BACKGROUNDS: SystemBackground[] = [
-  { id: 'bg-1', name: 'Dunes', group: 'cover', css: "url('/backgrounds/image-1.jpg') center/cover no-repeat" },
-  { id: 'bg-2', name: 'Shore', group: 'cover', css: "url('/backgrounds/image-2.jpg') center/cover no-repeat" },
-  { id: 'bg-3', name: 'Summit', group: 'cover', css: "url('/backgrounds/image-3.jpg') center/cover no-repeat" },
-  { id: 'bg-4', name: 'Forest', group: 'cover', css: "url('/backgrounds/image-4.jpg') center/cover no-repeat" },
-  { id: 'bg-5', name: 'Field', group: 'cover', css: "url('/backgrounds/image-5.jpg') center/cover no-repeat" },
-  { id: 'bg-6', name: 'Night sky', group: 'cover', css: "url('/backgrounds/image-6.jpg') center/cover no-repeat" },
-  { id: 'bg-video-1', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10070-fhd.mp4' },
-  { id: 'bg-video-2', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10002-fhd.mp4' },
-  { id: 'bg-video-3', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10005-fhd.mp4' },
-  { id: 'bg-video-4', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10006-fhd.mp4' },
-  { id: 'bg-video-5', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10025-fhd.mp4' },
-  { id: 'bg-video-6', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10028-fhd.mp4' },
-  { id: 'bg-video-7', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10032-fhd.mp4' },
-  { id: 'bg-video-8', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10034-fhd.mp4' },
-  { id: 'bg-video-9', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10035-fhd.mp4' },
-  { id: 'bg-video-10', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10043-fhd.mp4' },
-  { id: 'bg-video-11', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10046-fhd.mp4' },
-  { id: 'bg-video-12', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10069-fhd.mp4' },
-  { id: 'bg-video-13', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10070-fhd.mp4' },
-  { id: 'bg-video-14', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10071-fhd.mp4' },
-  { id: 'bg-video-15', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10072-fhd.mp4' },
-  { id: 'bg-video-16  ', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10073-fhd.mp4' },
+  { id: 'bg-1', name: 'Dunes', group: 'cover', src: '/backgrounds/image-1.jpg', css: imageCss('/backgrounds/image-1.jpg') },
+  { id: 'bg-2', name: 'Shore', group: 'cover', src: '/backgrounds/image-2.jpg', css: imageCss('/backgrounds/image-2.jpg') },
+  { id: 'bg-3', name: 'Summit', group: 'cover', src: '/backgrounds/image-3.jpg', css: imageCss('/backgrounds/image-3.jpg') },
+  { id: 'bg-4', name: 'Forest', group: 'cover', src: '/backgrounds/image-4.jpg', css: imageCss('/backgrounds/image-4.jpg') },
+  { id: 'bg-5', name: 'Field', group: 'cover', src: '/backgrounds/image-5.jpg', css: imageCss('/backgrounds/image-5.jpg') },
+  { id: 'bg-6', name: 'Night sky', group: 'cover', src: '/backgrounds/image-6.jpg', css: imageCss('/backgrounds/image-6.jpg') },
+  { id: 'bg-video-1', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10070-fhd.mp4', poster: '/backgrounds/10070-poster.jpg' },
+  { id: 'bg-video-2', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10002-fhd.mp4', poster: '/backgrounds/10002-poster.jpg' },
+  { id: 'bg-video-3', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10005-fhd.mp4', poster: '/backgrounds/10005-poster.jpg' },
+  { id: 'bg-video-4', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10006-fhd.mp4', poster: '/backgrounds/10006-poster.jpg' },
+  { id: 'bg-video-5', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10025-fhd.mp4', poster: '/backgrounds/10025-poster.jpg' },
+  { id: 'bg-video-6', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10028-fhd.mp4', poster: '/backgrounds/10028-poster.jpg' },
+  { id: 'bg-video-7', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10032-fhd.mp4', poster: '/backgrounds/10032-poster.jpg' },
+  { id: 'bg-video-8', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10034-fhd.mp4', poster: '/backgrounds/10034-poster.jpg' },
+  { id: 'bg-video-9', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10035-fhd.mp4', poster: '/backgrounds/10035-poster.jpg' },
+  { id: 'bg-video-10', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10043-fhd.mp4', poster: '/backgrounds/10043-poster.jpg' },
+  { id: 'bg-video-11', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10046-fhd.mp4', poster: '/backgrounds/10046-poster.jpg' },
+  { id: 'bg-video-12', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10069-fhd.mp4', poster: '/backgrounds/10069-poster.jpg' },
+  { id: 'bg-video-13', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10070-fhd.mp4', poster: '/backgrounds/10070-poster.jpg' },
+  { id: 'bg-video-14', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10071-fhd.mp4', poster: '/backgrounds/10071-poster.jpg' },
+  { id: 'bg-video-15', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10072-fhd.mp4', poster: '/backgrounds/10072-poster.jpg' },
+  { id: 'bg-video-16  ', name: 'Ambient video', group: 'cover', css: '#0b0f14', video: '/backgrounds/10073-fhd.mp4', poster: '/backgrounds/10073-poster.jpg' },
   { id: 'g1', name: 'Sunset', group: 'gradients', css: 'linear-gradient(135deg,#ff9a9e,#fecfef)' },
   { id: 'g2', name: 'Ocean', group: 'gradients', css: 'linear-gradient(135deg,#a1c4fd,#c2e9fb)' },
   { id: 'g3', name: 'Midnight', group: 'gradients', css: 'linear-gradient(135deg,#0f2027,#2c5364)' },
@@ -46,31 +52,32 @@ export const SYSTEM_BACKGROUNDS: SystemBackground[] = [
 ];
 
 export type BackgroundLook =
-  | { kind: 'image'; css: string }
-  | { kind: 'video'; url: string }
-  | { kind: 'gradient'; css: string };
+  | { kind: 'image'; css: string; src: string }
+  | { kind: 'video'; url: string; poster?: string }
+  | { kind: 'gradient'; css: string }
+  | { kind: 'fallback' };
 
 export function resolveBackground(current: string, custom?: string): BackgroundLook {
-  if (current === 'custom' && custom) {
+  if (current === 'custom') {
+    if (!custom) return { kind: 'fallback' };
     return custom.startsWith('data:video') || /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(custom)
       ? { kind: 'video', url: custom }
-      : { kind: 'image', css: `url('${custom}') center/cover no-repeat` };
+      : { kind: 'image', css: imageCss(custom), src: custom };
   }
   const item = SYSTEM_BACKGROUNDS.find((b) => b.id === current);
   if (item) {
-    if (item.video) return { kind: 'video', url: item.video };
+    if (item.video) return { kind: 'video', url: item.video, poster: item.poster };
     return current.startsWith('g')
       ? { kind: 'gradient', css: item.css }
-      : { kind: 'image', css: item.css };
+      : { kind: 'image', css: item.css, src: item.src ?? '' };
   }
-  const fallback = SYSTEM_BACKGROUNDS[0]!;
-  return { kind: 'image', css: fallback.css };
+  return { kind: 'fallback' };
 }
 
 export function availableBackgrounds(disliked: string[], custom?: string): SystemBackground[] {
   const list = SYSTEM_BACKGROUNDS.filter((b) => !disliked.includes(b.id));
   if (custom && !disliked.includes('custom')) {
-    list.push({ id: 'custom', name: 'My background', group: 'cover', css: `url('${custom}') center/cover no-repeat` });
+    list.push({ id: 'custom', name: 'My background', group: 'cover', css: imageCss(custom), src: custom });
   }
   return list;
 }

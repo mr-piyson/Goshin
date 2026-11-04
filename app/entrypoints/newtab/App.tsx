@@ -11,7 +11,8 @@ import WeatherWidget from "@/components/widgets/WeatherWidget";
 import Notes from "@/components/Notes";
 import Tasks from "@/components/Tasks";
 import BackgroundDialog from "@/components/BackgroundDialog";
-import LoopingVideo from "@/components/LoopingVideo";
+import BackgroundLayer from "@/components/BackgroundLayer";
+import FallbackBackground from "@/components/FallbackBackground";
 import Translator from "@/components/Translator";
 import TopSites from "@/components/TopSites";
 import HistoryWidget from "@/components/HistoryWidget";
@@ -178,7 +179,8 @@ export default function App() {
   );
   return (
     <div className={`ntp-root theme-${theme} flex h-screen w-screen flex-col overflow-hidden`}>
-      {look.kind === "video" ? <LoopingVideo key={look.url} className="ntp-bg" src={look.url} /> : <div className="ntp-bg" style={{ background: look.css }} aria-hidden="true" />}
+      <FallbackBackground />
+      <BackgroundLayer look={look} />
 
       {/* Collapsible Sidebar on screen edge with all apps + settings in one panel */}
       <Sidebar activeApp={sidebarApp} onActiveAppChange={setSidebarApp} settingsTab={settingsTab} ready={hydrated} />

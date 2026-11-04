@@ -61,7 +61,9 @@ export default function BackgroundGallery({ tab }: { tab: Tab }) {
                       }`}
                       style={{ background: item.css }}
                     >
-                      {item.video && <LoopingVideo src={item.video} className="absolute inset-0" />}
+                      {item.video && (
+                        <LoopingVideo src={item.video} poster={item.poster} className="absolute inset-0" />
+                      )}
                       <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-2 pb-1.5 pt-5 text-left text-[11px] font-medium text-white">
                         {item.name}
                       </span>

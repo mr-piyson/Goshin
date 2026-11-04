@@ -214,6 +214,43 @@ body {
   pointer-events: none;
 }
 
+.ntp-bg-image {
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Branded fallback shown when the selected background is missing or fails. */
+.ntp-fallback {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(900px 640px at 16% 4%, rgba(84, 203, 184, 0.16), transparent 58%),
+    radial-gradient(820px 620px at 86% 96%, rgba(112, 124, 226, 0.16), transparent 56%),
+    linear-gradient(145deg, #0b0f14 0%, #101c21 48%, #0b0f14 100%);
+}
+
+.ntp-fallback-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  opacity: 0.92;
+}
+
+.ntp-fallback-logo img {
+  width: 96px;
+  height: 96px;
+  filter: drop-shadow(0 18px 44px rgba(0, 0, 0, 0.38));
+}
+
+.ntp-fallback-logo span {
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
 .looping-video-layer {
   position: absolute;
   inset: 0;

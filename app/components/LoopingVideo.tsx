@@ -24,9 +24,11 @@ export function getVideoLayerZIndex(index: number, active: number, fadeTo: numbe
 interface LoopingVideoProps {
   src: string;
   className: string;
+  poster?: string;
+  onError?: () => void;
 }
 
-export default function LoopingVideo({ src, className }: LoopingVideoProps) {
+export default function LoopingVideo({ src, className, poster, onError }: LoopingVideoProps) {
   const videos = useRef<[HTMLVideoElement | null, HTMLVideoElement | null]>([null, null]);
   const activeRef = useRef(0);
   const fadeToRef = useRef<number | null>(null);
@@ -145,6 +147,7 @@ export default function LoopingVideo({ src, className }: LoopingVideoProps) {
             videos.current[index] = video;
           }}
           src={src}
+          poster={poster}
           muted
           playsInline
           autoPlay={index === 0}
@@ -157,6 +160,7 @@ export default function LoopingVideo({ src, className }: LoopingVideoProps) {
           }}
           onTimeUpdate={() => handleTimeUpdate(index)}
           onEnded={() => handleEnded(index)}
+          onError={onError}
         />
       ))}
     </div>
