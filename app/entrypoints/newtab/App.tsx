@@ -80,8 +80,18 @@ export default function App() {
 
   const [panel, setPanel] = useState<PanelId | null>(null);
   const [sidebarApp, setSidebarApp] = useState<SidebarAppId | null>(null);
+  const [settingsTab, setSettingsTab] = useState<{ tab: string; requestId: number } | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  // Time widget width is driven by its measured content so the clock can grow
+  // (e.g. "Thu, Nov 5, 2026") without clipping; Collapsible animates the change.
+  const [timeWidgetWidth, setTimeWidgetWidth] = useState(114);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  /** Open the Settings panel directly on a tab (used by the Time/Weather widgets). */
+  const openSettings = useCallback((tab: string) => {
+    setSettingsTab((prev) => ({ tab, requestId: (prev?.requestId ?? 0) + 1 }));
+    setSidebarApp("settings");
+  }, []);
 
   // Load persisted state once, then only start persisting after hydration so the
   // default state never overwrites what the user already saved.
@@ -159,7 +169,7 @@ export default function App() {
       {look.kind === "video" ? <LoopingVideo key={look.url} className="ntp-bg" src={look.url} /> : <div className="ntp-bg" style={{ background: look.css }} aria-hidden="true" />}
 
       {/* Collapsible Sidebar on screen edge with all apps + settings in one panel */}
-      <Sidebar activeApp={sidebarApp} onActiveAppChange={setSidebarApp} ready={hydrated} />
+      <Sidebar activeApp={sidebarApp} onActiveAppChange={setSidebarApp} settingsTab={settingsTab} ready={hydrated} />
 
       {topbarVisible && (
         <TopBar
@@ -182,7 +192,7 @@ export default function App() {
       `}
     >
       <Collapsible open={weatherVisible} width={113}>
-        <WeatherWidget />
+        <WeatherWidget onOpenSettings={() => openSettings("weather")} />
       </Collapsible>
 
       <Collapsible open={weatherVisible && timeVisible} width={9}>
@@ -191,8 +201,8 @@ export default function App() {
         </div>
       </Collapsible>
 
-      <Collapsible open={timeVisible} width={114}>
-        <TimeWidget />
+      <Collapsible open={timeVisible} width={timeWidgetWidth}>
+        <TimeWidget onOpenSettings={() => openSettings("time")} onWidthChange={setTimeWidgetWidth} />
       </Collapsible>
     </div>
   </div>

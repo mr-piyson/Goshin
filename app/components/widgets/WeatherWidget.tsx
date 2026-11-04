@@ -4,7 +4,7 @@ import { browser } from 'wxt/browser';
 import type { RootState } from '@/store';
 
 interface Weather { temp: number; code: number; city?: string }
-type Source = 'gps' | 'ip';
+type Source = 'gps' | 'ip' | 'manual';
 
 const codeLabel = (c: number) =>
   c === 0 ? 'Clear' : c < 4 ? 'Partly cloudy' : c < 50 ? 'Fog'
@@ -72,8 +72,10 @@ async function writeCache(w: Weather, source: Source) {
 
 type Phase = 'boot' | 'asking' | 'loading' | 'ready' | 'error';
 
-export default function WeatherWidget() {
+export default function WeatherWidget({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const unit = useSelector((s: RootState) => s.settings.weatherUnit);
+  const weatherSource = useSelector((s: RootState) => s.settings.weatherSource);
+  const weatherCity = useSelector((s: RootState) => s.settings.weatherCity);
 
   const [w, setW] = useState<Weather | null>(null);
   const [source, setSource] = useState<Source | null>(null);
@@ -85,6 +87,8 @@ export default function WeatherWidget() {
   // state change, and to survive StrictMode double-invocation.
   const started = useRef(false);
   const hasWeather = useRef(false);
+  /** Last manual city applied, so switching tabs doesn't refetch the same city. */
+  const manualKey = useRef<string | null>(null);
 
   // -- data fetchers ---------------------------------------------------------
 
@@ -225,10 +229,32 @@ export default function WeatherWidget() {
   }, [fetchByIP, getGPSWeather, queryPermission]);
 
   useEffect(() => {
+    // Manual mode: pin the widget to the city chosen in Settings → Weather.
+    if (weatherSource === 'manual' && weatherCity) {
+      // Let the auto flow run again if the user switches back later.
+      started.current = false;
+      const key = `${weatherCity.lat},${weatherCity.lon}`;
+      if (manualKey.current === key) return;
+      manualKey.current = key;
+      hasWeather.current = false;
+      setPhase('loading');
+      void (async () => {
+        const cached = await readCache();
+        if (cached && cached.source === 'manual' && cached.city === weatherCity.name) {
+          hasWeather.current = true;
+          setW({ temp: cached.temp, code: cached.code, city: cached.city });
+          setSource('manual');
+          setPhase('ready');
+        }
+        await fetchWeather(weatherCity.lat, weatherCity.lon, 'manual', weatherCity.name);
+      })();
+      return;
+    }
+
     if (started.current) return; // StrictMode double-invoke guard
     started.current = true;
     void bootstrap().catch(() => { /* handled in callbacks */ });
-  }, [bootstrap]);
+  }, [weatherSource, weatherCity, fetchWeather, bootstrap]);
 
   // -- render ----------------------------------------------------------------
 
@@ -236,8 +262,8 @@ export default function WeatherWidget() {
     return (
       <button
         type="button"
-        onClick={() => void bootstrap()}
-        title={err ?? 'Retry'}
+        onClick={() => onOpenSettings?.()}
+        title={err ? `${err} — open weather settings` : 'Open weather settings'}
         className="flex h-full w-full min-w-[64px] flex-col items-center justify-center px-2 text-center"
       >
         <WeatherIcon code={3} className="h-5 w-5 opacity-70" />
@@ -248,13 +274,15 @@ export default function WeatherWidget() {
 
   if (!w) {
     return (
-      <div
+      <button
+        type="button"
+        onClick={() => onOpenSettings?.()}
         className="flex h-full w-full min-w-[64px] items-center justify-center gap-1.5 px-2"
         aria-label={phase === 'asking' ? 'Waiting for location' : 'Loading weather'}
       >
         <span className="h-4 w-4 animate-pulse rounded-full bg-[color:var(--surface-strong)]" />
         <span className="text-xl font-medium leading-none ui-muted">…</span>
-      </div>
+      </button>
     );
   }
 
@@ -266,6 +294,16 @@ export default function WeatherWidget() {
   className="relative flex h-full w-full min-w-[64px] flex-col items-center justify-center gap-0.5 px-2"
   title={label}
 >
+  {/* Whole tile opens Settings → Weather; content stays non-interactive so the
+      click always reaches this surface. */}
+  <button
+    type="button"
+    onClick={() => onOpenSettings?.()}
+    aria-label={`${label}. Open weather settings`}
+    className="absolute inset-0 z-0 rounded-md transition-colors hover:bg-white/10"
+  />
+
+  <div className="pointer-events-none relative z-10 flex flex-col items-center justify-center gap-0.5">
   <div className="flex items-center gap-1.5">
     <WeatherIcon code={w.code} className="h-5 w-5 shrink-0" />
     <span className="text-xl font-medium leading-none tabular-nums">
@@ -281,13 +319,17 @@ export default function WeatherWidget() {
       {w.city}
     </span>
   )}
+  </div>
       {canUpgrade && source === 'ip' && (
         <button
           type="button"
-          onClick={() => void requestPreciseLocation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            void requestPreciseLocation();
+          }}
           title="Use precise location"
           aria-label="Use precise location"
-          className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[color:var(--surface-strong)] text-[9px] leading-none opacity-70 hover:opacity-100"
+          className="absolute -right-0.5 -top-0.5 z-20 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[color:var(--surface-strong)] text-[9px] leading-none opacity-70 hover:opacity-100"
         >
           <svg viewBox="0 0 24 24" className="h-2.5 w-2.5" fill="none"
                stroke="currentColor" strokeWidth={2.4}

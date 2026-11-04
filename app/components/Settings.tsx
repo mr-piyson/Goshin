@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setWidget, setSidebarApp, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setTopbarMusic, setTopbarLoop, setTopbarStations, setAll } from "@/store/settingsSlice";
+import dayjs from "dayjs";
+import { setWidget, setSidebarApp, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setDateStyle, setShowDate, setShowYear, setWeatherUnit, setWeatherSource, setWeatherCity, setSearchEngine, setTheme, setTopbarMusic, setTopbarLoop, setTopbarStations, setAll } from "@/store/settingsSlice";
 import { DEFAULT_TOPBAR_STATIONS } from "@/store/settingsSlice";
-import type { Station } from "@/store/settingsSlice";
+import type { Station, WeatherCity } from "@/store/settingsSlice";
 import type { RootState, AppDispatch } from "@/store";
+import { DATE_STYLES, dateStyleFormat } from "@/lib/dateStyles";
+import WeatherCityPicker from "./WeatherCityPicker";
 import { CalendarIcon, MailIcon, TasksIcon, NotesIcon, HistoryIcon, TranslateIcon, GameIcon, HourglassIcon, GlobeIcon, PinIcon, SlidersIcon, TrashIcon, PlusIcon } from "./Icons";
 import { Switch } from "./switch";
 import SettingsTabs from "./SettingsTabs";
@@ -31,6 +34,8 @@ const SETTINGS_TABS = [
   { id: "apps", label: "Apps" },
   { id: "sidebar", label: "Sidebar" },
   { id: "widgets", label: "Widgets" },
+  { id: "time", label: "Time" },
+  { id: "weather", label: "Weather" },
   { id: "topbar", label: "Topbar" },
   { id: "general", label: "General" },
   { id: "data", label: "Data" },
@@ -98,7 +103,7 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
   );
 }
 
-export default function Settings() {
+export default function Settings({ initialTab, tabRequest }: { initialTab?: string | null; tabRequest?: number } = {}) {
   const dispatch = useDispatch<AppDispatch>();
   const s = useSelector((state: RootState) => state.settings);
   const sidebarApps = s.sidebarApps ?? {};
@@ -125,6 +130,15 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState<string>("sidebar");
   const currentTab = SETTINGS_TABS.some((t) => t.id === activeTab) ? activeTab : SETTINGS_TABS[0]?.id ?? "sidebar";
   const currentTabIndex = Math.max(0, SETTINGS_TABS.findIndex((t) => t.id === currentTab));
+
+  // External entry points (clicking the Time/Weather widget) can request a tab.
+  // tabRequest changes on every click, so re-clicking the same widget while the
+  // panel is already open re-selects its tab.
+  useEffect(() => {
+    if (initialTab && SETTINGS_TABS.some((t) => t.id === initialTab)) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, tabRequest]);
 
   // The sliding track keeps every page mounted; the container height animates
   // to match the active page so a short page doesn't leave dead space below it.
@@ -284,6 +298,133 @@ export default function Settings() {
             </Section>
           </TabPage>
 
+          {/* Time & date: clock format plus full date-line styling */}
+          <TabPage id="time" active={currentTab === "time"}>
+            <Section title="Clock" description="How the time widget renders the clock.">
+              <Segmented
+                value={s.timeFormat}
+                options={[
+                  { value: "24", label: "24-hour" },
+                  { value: "12", label: "12-hour" },
+                ]}
+                onChange={(value) => dispatch(setTimeFormat(value))}
+              />
+
+              <div className="mt-2.5 flex items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] p-3">
+                <div>
+                  <span className="block text-xs font-medium">Show seconds</span>
+                  <span className="block text-[11px] ui-muted">Tick every second instead of every minute</span>
+                </div>
+                <Switch checked={s.showSeconds} label="Show seconds" onChange={() => dispatch(setShowSeconds(!s.showSeconds))} />
+              </div>
+            </Section>
+
+            <Section title="Date style" description="Pick how the date under the clock is written.">
+              <div className="grid grid-cols-1 gap-2">
+                {DATE_STYLES.map((style) => {
+                  const active = (s.dateStyle ?? "smart") === style.id;
+                  return (
+                    <button
+                      key={style.id}
+                      type="button"
+                      onClick={() => dispatch(setDateStyle(style.id))}
+                      aria-pressed={active}
+                      className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left text-xs transition ${
+                        active
+                          ? "border-accent/65 bg-accent/10"
+                          : "border-[color:var(--border)] hover:bg-[color:var(--surface-strong)]"
+                      }`}
+                    >
+                      <span className="min-w-0">
+                        <span className="block font-medium">{style.label}</span>
+                        <span className="block truncate text-[10px] ui-muted">{style.hint}</span>
+                      </span>
+                      <span className="shrink-0 tabular-nums text-[11px] ui-muted">
+                        {dayjs().format(dateStyleFormat(style.id, s.showYear ?? true))}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-2.5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] p-3">
+                <div>
+                  <span className="block text-xs font-medium">Show date</span>
+                  <span className="block text-[11px] ui-muted">Display the date line under the clock</span>
+                </div>
+                <Switch checked={s.showDate ?? true} label="Show date" onChange={() => dispatch(setShowDate(!(s.showDate ?? true)))} />
+              </div>
+
+              <div className="mt-2.5 flex items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] p-3">
+                <div>
+                  <span className="block text-xs font-medium">Show year</span>
+                  <span className="block text-[11px] ui-muted">Append the year to the date line</span>
+                </div>
+                <Switch checked={s.showYear ?? true} label="Show year" onChange={() => dispatch(setShowYear(!(s.showYear ?? true)))} />
+              </div>
+            </Section>
+          </TabPage>
+
+          {/* Weather: units + automatic or hand-picked city */}
+          <TabPage id="weather" active={currentTab === "weather"}>
+            <Section title="Units">
+              <Segmented
+                value={s.weatherUnit}
+                options={[
+                  { value: "C", label: "°Celsius" },
+                  { value: "F", label: "°Fahrenheit" },
+                ]}
+                onChange={(value) => dispatch(setWeatherUnit(value))}
+              />
+            </Section>
+
+            <Section title="Location" description="Use your device location, or pin the forecast to a city you choose.">
+              <Segmented
+                value={s.weatherSource ?? "auto"}
+                options={[
+                  { value: "auto", label: "Auto (GPS → IP)" },
+                  { value: "manual", label: "Manual city" },
+                ]}
+                onChange={(value) => dispatch(setWeatherSource(value))}
+              />
+
+              {(s.weatherSource ?? "auto") === "manual" && (
+                <div className="mt-3 space-y-3">
+                  <WeatherCityPicker
+                    selected={s.weatherCity}
+                    onSelect={(city: WeatherCity) => dispatch(setWeatherCity(city))}
+                  />
+
+                  {s.weatherCity ? (
+                    <div className="flex items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] p-3">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-acbg-accent dark:text-accent/90">
+                          <GlobeIcon className="h-4 w-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <span className="block truncate text-xs font-medium">{s.weatherCity.name}</span>
+                          <span className="block truncate text-[10px] ui-muted">
+                            {s.weatherCity.country ? `${s.weatherCity.country} · ` : ""}
+                            {s.weatherCity.lat.toFixed(2)}°, {s.weatherCity.lon.toFixed(2)}°
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => dispatch(setWeatherCity(null))}
+                        className="shrink-0 rounded-lg border border-[color:var(--border)] bg-[color:var(--field)] px-2.5 py-1 text-[11px] font-medium transition hover:bg-[color:var(--surface-strong)]"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] ui-muted">Search for a city or click the map to pin one.</p>
+                  )}
+                </div>
+              )}
+            </Section>
+          </TabPage>
+
           {/* Top bar: music player + customizable radio stations */}
           <TabPage id="topbar" active={currentTab === "topbar"}>
             <Section title="Music player" description="Player controls for the bar at the top of the screen.">
@@ -387,34 +528,6 @@ export default function Settings() {
           </TabPage>
 
           <TabPage id="general" active={currentTab === "general"}>
-            <Section title="Time & date">
-              <div className="flex flex-wrap items-center gap-3">
-                <Segmented
-                  value={s.timeFormat}
-                  options={[
-                    { value: "24", label: "24-hour" },
-                    { value: "12", label: "12-hour" },
-                  ]}
-                  onChange={(value) => dispatch(setTimeFormat(value))}
-                />
-                <label className="flex cursor-pointer items-center gap-2 text-xs">
-                  <input type="checkbox" checked={s.showSeconds} onChange={(event) => dispatch(setShowSeconds(event.target.checked))} className="h-3.5 w-3.5 accent-acbg-accent" />
-                  Show seconds
-                </label>
-              </div>
-            </Section>
-
-            <Section title="Weather">
-              <Segmented
-                value={s.weatherUnit}
-                options={[
-                  { value: "C", label: "°Celsius" },
-                  { value: "F", label: "°Fahrenheit" },
-                ]}
-                onChange={(value) => dispatch(setWeatherUnit(value))}
-              />
-            </Section>
-
             <Section title="Search engine">
               <Segmented
                 value={s.searchEngine}

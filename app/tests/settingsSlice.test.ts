@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import reducer, { setWidget, setSidebarApp, setSidebarPinned, setSidebarPosition, setAll, type SettingsState } from "../store/settingsSlice";
+import reducer, { setWidget, setSidebarApp, setSidebarPinned, setSidebarPosition, setAll, setDateStyle, setShowDate, setShowYear, setWeatherSource, setWeatherCity, type SettingsState } from "../store/settingsSlice";
 
 describe("settingsSlice", () => {
   const initial = reducer(undefined, { type: "@@INIT" });
@@ -44,5 +44,44 @@ describe("settingsSlice", () => {
     expect(state.sidebarApps).toBeDefined();
     expect(state.sidebarPinned).toBe(true);
     expect(state.sidebarPosition).toBe("left");
+  });
+
+  it("defaults the date style and weather location", () => {
+    expect(initial.dateStyle).toBe("smart");
+    expect(initial.showDate).toBe(true);
+    expect(initial.showYear).toBe(true);
+    expect(initial.weatherSource).toBe("auto");
+    expect(initial.weatherCity).toBeNull();
+  });
+
+  it("updates the date style and date visibility", () => {
+    let state = reducer(initial, setDateStyle("long"));
+    expect(state.dateStyle).toBe("long");
+
+    state = reducer(state, setShowDate(false));
+    expect(state.showDate).toBe(false);
+
+    state = reducer(state, setShowYear(false));
+    expect(state.showYear).toBe(false);
+  });
+
+  it("switches weather to a manually pinned city and back", () => {
+    let state = reducer(initial, setWeatherSource("manual"));
+    expect(state.weatherSource).toBe("manual");
+
+    state = reducer(state, setWeatherCity({ name: "Amman", lat: 31.95, lon: 35.93, country: "Jordan" }));
+    expect(state.weatherCity).toEqual({ name: "Amman", lat: 31.95, lon: 35.93, country: "Jordan" });
+
+    state = reducer(state, setWeatherCity(null));
+    expect(state.weatherCity).toBeNull();
+  });
+
+  it("fills new fields when importing an older settings blob", () => {
+    const state = reducer(initial, setAll({ theme: "dark" } as Partial<SettingsState>));
+    expect(state.dateStyle).toBe("smart");
+    expect(state.showDate).toBe(true);
+    expect(state.showYear).toBe(true);
+    expect(state.weatherSource).toBe("auto");
+    expect(state.weatherCity).toBeNull();
   });
 });

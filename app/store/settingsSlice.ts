@@ -7,12 +7,30 @@ export interface SettingsState {
   sidebarPosition: "left" | "right";
   timeFormat: "12" | "24";
   showSeconds: boolean;
+  /** Preset id of the date line under the clock (see lib/dateStyles.ts). */
+  dateStyle: string;
+  /** Show the date line under the clock at all. */
+  showDate: boolean;
+  /** Append the year to the date line when the preset omits it. */
+  showYear: boolean;
   weatherUnit: "C" | "F";
+  /** "auto" = GPS → IP fallback; "manual" = user-picked city. */
+  weatherSource: "auto" | "manual";
+  /** Fixed lat/lon used when weatherSource is "manual". */
+  weatherCity: WeatherCity | null;
   searchEngine: "google" | "bing" | "duckduckgo";
   theme: "dark" | "light" | "system";
   topbarMusic: boolean;
   topbarLoop: boolean;
   topbarStations: Station[];
+}
+
+/** A user-pinned location for the weather widget. */
+export interface WeatherCity {
+  name: string;
+  lat: number;
+  lon: number;
+  country?: string;
 }
 
 /** One radio channel in the top bar playlist. */
@@ -56,7 +74,12 @@ const initial: SettingsState = {
   sidebarPosition: "left",
   timeFormat: "24",
   showSeconds: false,
+  dateStyle: "smart",
+  showDate: true,
+  showYear: true,
   weatherUnit: "C",
+  weatherSource: "auto",
+  weatherCity: null,
   searchEngine: "google",
   theme: "dark",
   topbarMusic: true,
@@ -90,8 +113,23 @@ const slice = createSlice({
     setShowSeconds: (s, a: PayloadAction<boolean>) => {
       s.showSeconds = a.payload;
     },
+    setDateStyle: (s, a: PayloadAction<string>) => {
+      s.dateStyle = a.payload;
+    },
+    setShowDate: (s, a: PayloadAction<boolean>) => {
+      s.showDate = a.payload;
+    },
+    setShowYear: (s, a: PayloadAction<boolean>) => {
+      s.showYear = a.payload;
+    },
     setWeatherUnit: (s, a: PayloadAction<"C" | "F">) => {
       s.weatherUnit = a.payload;
+    },
+    setWeatherSource: (s, a: PayloadAction<"auto" | "manual">) => {
+      s.weatherSource = a.payload;
+    },
+    setWeatherCity: (s, a: PayloadAction<WeatherCity | null>) => {
+      s.weatherCity = a.payload;
     },
     setSearchEngine: (s, a: PayloadAction<SettingsState["searchEngine"]>) => {
       s.searchEngine = a.payload;
@@ -122,6 +160,21 @@ const slice = createSlice({
       if (!s.widgets) {
         s.widgets = { ...DEFAULT_WIDGETS };
       }
+      if (!s.dateStyle) {
+        s.dateStyle = "smart";
+      }
+      if (s.showDate === undefined) {
+        s.showDate = true;
+      }
+      if (s.showYear === undefined) {
+        s.showYear = true;
+      }
+      if (!s.weatherSource) {
+        s.weatherSource = "auto";
+      }
+      if (s.weatherCity === undefined) {
+        s.weatherCity = null;
+      }
       if (s.topbarMusic === undefined) {
         s.topbarMusic = true;
       }
@@ -135,5 +188,5 @@ const slice = createSlice({
   },
 });
 
-export const { setWidget, setSidebarApp, setSidebarApps, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setWeatherUnit, setSearchEngine, setTheme, setTopbarMusic, setTopbarLoop, setTopbarStations, setAll } = slice.actions;
+export const { setWidget, setSidebarApp, setSidebarApps, setSidebarPinned, setSidebarPosition, setTimeFormat, setShowSeconds, setDateStyle, setShowDate, setShowYear, setWeatherUnit, setWeatherSource, setWeatherCity, setSearchEngine, setTheme, setTopbarMusic, setTopbarLoop, setTopbarStations, setAll } = slice.actions;
 export default slice.reducer;

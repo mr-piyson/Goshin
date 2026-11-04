@@ -68,6 +68,8 @@ interface SidebarProps {
   /** Optional controlled open app id (used when other UI must drive the panel, e.g. CornerDock). */
   activeApp?: SidebarAppId | null;
   onActiveAppChange?: (id: SidebarAppId | null) => void;
+  /** Requested Settings tab (e.g. "time"/"weather" from a widget click). */
+  settingsTab?: { tab: string; requestId: number } | null;
   /** Suppress rendering until persisted settings are loaded, so the sidebar's
    *  first paint already has the correct pinned/unpinned position and never
    *  flashes or animates out on reload. */
@@ -106,7 +108,7 @@ function RailButton({ app, isActive, onToggle, onHover }: RailButtonProps) {
   );
 }
 
-export default function Sidebar({ activeApp: controlledApp, onActiveAppChange, ready = true }: SidebarProps) {
+export default function Sidebar({ activeApp: controlledApp, onActiveAppChange, settingsTab, ready = true }: SidebarProps) {
   const dispatch = useDispatch<AppDispatch>();
   const settings = useSelector((state: RootState) => state.settings);
   const sidebarApps = settings.sidebarApps ?? {};
@@ -342,7 +344,13 @@ export default function Sidebar({ activeApp: controlledApp, onActiveAppChange, r
                   </div>
                 </header>
 
-                <div className="ntp-scroll min-h-0 flex-1 overflow-y-auto p-4">{shownApp.render()}</div>
+                <div className="ntp-scroll min-h-0 flex-1 overflow-y-auto p-4">
+                  {shownApp.id === "settings" ? (
+                    <Settings initialTab={settingsTab?.tab} tabRequest={settingsTab?.requestId} />
+                  ) : (
+                    shownApp.render()
+                  )}
+                </div>
               </>
             )}
           </div>

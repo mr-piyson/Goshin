@@ -1,9 +1,17 @@
 
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import dayjs from "dayjs";
 import type { RootState } from "@/store";
+import { dateStyleFormat } from "@/lib/dateStyles";
+
+/** Horizontal padding of the clock button (px-4 → 16px each side). */
+const BUTTON_PADDING_X = 32;
+/** A couple of pixels of breathing room so the date never touches the edge. */
+const WIDTH_BUFFER = 4;
+/** Easing shared with the Collapsible width animation. */
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 const TIME_TRANSITION = {
   duration: 0.3,
@@ -54,7 +62,14 @@ const AnimatedTime = memo(function AnimatedTime({
   );
 });
 
-function TimeWidget() {
+function TimeWidget({
+  onOpenSettings,
+  onWidthChange,
+}: {
+  onOpenSettings?: () => void;
+  /** Reports the natural content width so the parent can animate its width. */
+  onWidthChange?: (width: number) => void;
+}) {
   const timeFormat = useSelector(
     (s: RootState) => s.settings.timeFormat
   );
@@ -63,8 +78,19 @@ function TimeWidget() {
     (s: RootState) => s.settings.showSeconds
   );
 
+  const dateStyle = useSelector(
+    (s: RootState) => s.settings.dateStyle
+  );
+
+  const showDate = useSelector(
+    (s: RootState) => s.settings.showDate
+  );
+
+  const showYear = useSelector(
+    (s: RootState) => s.settings.showYear
+  );
+
   const [now, setNow] = useState(() => Date.now());
-  const [isActive, setIsActive] = useState(false);
 
   const reduceMotion = useReducedMotion();
 
@@ -105,13 +131,43 @@ function TimeWidget() {
         : "HH:mm";
 
   const current = dayjs(now);
+  const timeText = current.format(fmt);
+  const dateText = current.format(dateStyleFormat(dateStyle, showYear ?? true));
+  const dateVisible = showDate ?? true;
+
+  // Measure the natural (unclipped) content width. The visible clock sits in a
+  // fixed-width Collapsible, so we measure an invisible copy and let App animate
+  // the container to fit — long dates no longer overflow.
+  const measureRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = measureRef.current;
+    if (!el || !onWidthChange) return;
+    const width = Math.ceil(el.getBoundingClientRect().width) + BUTTON_PADDING_X + WIDTH_BUFFER;
+    onWidthChange(width);
+  }, [fmt, dateText, dateVisible, onWidthChange]);
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center">
+    <div className="relative flex h-full w-full flex-col items-center justify-center">
+      {/* Hidden natural-size copy used only for width measurement. */}
+      <div
+        ref={measureRef}
+        aria-hidden="true"
+        className="pointer-events-none invisible absolute left-0 top-0 w-max"
+      >
+        <span className="block whitespace-nowrap font-manrope text-xl font-medium leading-none tabular-nums">
+          {timeText}
+        </span>
+        {dateVisible && (
+          <span className="block whitespace-nowrap text-sm font-normal leading-none">
+            {dateText}
+          </span>
+        )}
+      </div>
+
       <button
         type="button"
-        onClick={() => setIsActive((prev) => !prev)}
-        aria-pressed={isActive}
+        onClick={() => onOpenSettings?.()}
+        title="Time & date settings"
         className={`
           flex flex-col items-center justify-center rounded-md px-4 py-2
           text-center cursor-pointer
@@ -119,18 +175,50 @@ function TimeWidget() {
           hover:bg-white/15
           active:bg-white/30
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40
-          ${isActive ? "bg-white/50" : ""}
         `}
       >
-        <AnimatedTime
-          key={fmt}
-          value={current.format(fmt)}
-          reduceMotion={!!reduceMotion}
-        />
+        {/* Format changes (12h ↔ 24h, seconds on/off) roll the whole clock as
+            one unit; regular ticking keeps the per-character animation. */}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={fmt}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
+            transition={{ duration: reduceMotion ? 0.1 : 0.22, ease: EASE }}
+          >
+            <AnimatedTime
+              value={timeText}
+              reduceMotion={!!reduceMotion}
+            />
+          </motion.div>
+        </AnimatePresence>
 
-        <div className="mt-1.5 whitespace-nowrap text-sm font-normal leading-none ui-muted">
-          {current.format("ddd, MMM D")}
-        </div>
+        <AnimatePresence initial={false}>
+          {dateVisible && (
+            <motion.div
+              key="date-line"
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, marginTop: 0 }}
+              animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: "auto", marginTop: 6 }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, marginTop: 0 }}
+              transition={{ duration: reduceMotion ? 0.1 : 0.22, ease: EASE }}
+              className="overflow-hidden whitespace-nowrap text-sm font-normal leading-none ui-muted"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={dateText}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: reduceMotion ? 0.1 : 0.18, ease: "easeOut" }}
+                  className="block whitespace-nowrap"
+                >
+                  {dateText}
+                </motion.span>
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </button>
     </div>
   );
