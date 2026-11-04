@@ -1,7 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { browser } from 'wxt/browser';
 import type { RootState } from '@/store';
+import { reverseGeocodeCity } from '@/lib/geocode';
+
+/** Same easing as the time widget's format roll. */
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 interface Weather { temp: number; code: number; city?: string }
 type Source = 'gps' | 'ip' | 'manual';
@@ -76,17 +81,24 @@ export default function WeatherWidget({ onOpenSettings }: { onOpenSettings?: () 
   const unit = useSelector((s: RootState) => s.settings.weatherUnit);
   const weatherSource = useSelector((s: RootState) => s.settings.weatherSource);
   const weatherCity = useSelector((s: RootState) => s.settings.weatherCity);
+  const reduceMotion = useReducedMotion();
 
   const [w, setW] = useState<Weather | null>(null);
   const [source, setSource] = useState<Source | null>(null);
   const [phase, setPhase] = useState<Phase>('boot');
   const [err, setErr] = useState<string | null>(null);
   const [canUpgrade, setCanUpgrade] = useState(false);
+  /** Delayed so a cache hit (which lands within a frame or two) never flashes
+   *  the loading skeleton on page refresh. */
+  const [showPlaceholder, setShowPlaceholder] = useState(false);
 
   // Refs — used inside callbacks so we don't have to re-create them on every
   // state change, and to survive StrictMode double-invocation.
   const started = useRef(false);
   const hasWeather = useRef(false);
+  /** Last city label from an automatic source, kept as a fallback while a new
+   *  reverse-geocode lookup is in flight (prevents the label blinking away). */
+  const lastCity = useRef<string | null>(null);
   /** Last manual city applied, so switching tabs doesn't refetch the same city. */
   const manualKey = useRef<string | null>(null);
 
@@ -108,6 +120,9 @@ export default function WeatherWidget({ onOpenSettings }: { onOpenSettings?: () 
           code: j.current.weather_code,
           city,
         };
+        // Only automatic labels feed the fallback; a manual city must not leak
+        // into Auto mode when the user switches back.
+        if (city && src !== 'manual') lastCity.current = city;
         hasWeather.current = true;
         setW(next);
         setSource(src);
@@ -155,7 +170,13 @@ export default function WeatherWidget({ onOpenSettings }: { onOpenSettings?: () 
     await new Promise<void>((resolve) => {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
-          await fetchWeather(pos.coords.latitude, pos.coords.longitude, 'gps');
+          const { latitude, longitude } = pos.coords;
+          // Resolve the nearest city before rendering so the label arrives in
+          // the same update as the temperature (no city-less flash), and keep
+          // the previous label when the geocoder can't answer.
+          const geo = await reverseGeocodeCity(latitude, longitude);
+          const city = geo?.name ?? lastCity.current ?? undefined;
+          await fetchWeather(latitude, longitude, 'gps', city);
           resolve();
         },
         async () => {
@@ -202,14 +223,18 @@ export default function WeatherWidget({ onOpenSettings }: { onOpenSettings?: () 
   // -- bootstrap -------------------------------------------------------------
 
   const bootstrap = useCallback(async () => {
-    // 1) Cache first — instant popup
+    // 1) Cache first — instant popup. Manual-city entries belong to the pinned
+    //    mode; when we're back in Auto they must not masquerade as device
+    //    location, otherwise the widget keeps showing the old manual city.
     const cached = await readCache();
-    if (cached) {
+    const usableCache = cached && cached.source !== 'manual' ? cached : null;
+    if (usableCache) {
       hasWeather.current = true;
-      setW({ temp: cached.temp, code: cached.code, city: cached.city });
-      setSource(cached.source);
+      if (usableCache.city) lastCity.current = usableCache.city;
+      setW({ temp: usableCache.temp, code: usableCache.code, city: usableCache.city });
+      setSource(usableCache.source);
       setPhase('ready');
-      if (cached.source === 'gps') return; // still fresh
+      if (usableCache.source === 'gps') return; // still fresh
     }
 
     // 2) Query permission
@@ -222,7 +247,7 @@ export default function WeatherWidget({ onOpenSettings }: { onOpenSettings?: () 
     }
 
     // 4) Otherwise IP fallback so we're never empty
-    if (!cached) await fetchByIP();
+    if (!usableCache) await fetchByIP();
 
     // 5) Offer upgrade unless the user has explicitly blocked us
     if (permState !== 'denied') setCanUpgrade(true);
@@ -256,33 +281,50 @@ export default function WeatherWidget({ onOpenSettings }: { onOpenSettings?: () 
     void bootstrap().catch(() => { /* handled in callbacks */ });
   }, [weatherSource, weatherCity, fetchWeather, bootstrap]);
 
+  useEffect(() => {
+    if (w) {
+      setShowPlaceholder(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setShowPlaceholder(true), 150);
+    return () => window.clearTimeout(timer);
+  }, [w]);
+
   // -- render ----------------------------------------------------------------
 
   if (phase === 'error' && !w) {
     return (
-      <button
-        type="button"
-        onClick={() => onOpenSettings?.()}
-        title={err ? `${err} — open weather settings` : 'Open weather settings'}
-        className="flex h-full w-full min-w-[64px] flex-col items-center justify-center px-2 text-center"
-      >
-        <WeatherIcon code={3} className="h-5 w-5 opacity-70" />
-        <span className="mt-1 text-xl font-medium leading-none ui-muted">—</span>
-      </button>
+      <div className="flex h-full w-full min-w-[64px] items-center justify-center">
+        <button
+          type="button"
+          onClick={() => onOpenSettings?.()}
+          title={err ? `${err} — open weather settings` : 'Open weather settings'}
+          className="flex flex-col items-center justify-center rounded-md px-4 py-2 text-center transition-colors duration-200 hover:bg-white/15 active:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+        >
+          <WeatherIcon code={3} className="h-5 w-5 opacity-70" />
+          <span className="mt-1 text-xl font-medium leading-none ui-muted">—</span>
+        </button>
+      </div>
     );
   }
 
   if (!w) {
+    // Empty box while the cache read settles: same footprint, no skeleton.
+    if (!showPlaceholder) {
+      return <div className="h-full w-full min-w-[64px]" aria-hidden="true" />;
+    }
     return (
-      <button
-        type="button"
-        onClick={() => onOpenSettings?.()}
-        className="flex h-full w-full min-w-[64px] items-center justify-center gap-1.5 px-2"
-        aria-label={phase === 'asking' ? 'Waiting for location' : 'Loading weather'}
-      >
-        <span className="h-4 w-4 animate-pulse rounded-full bg-[color:var(--surface-strong)]" />
-        <span className="text-xl font-medium leading-none ui-muted">…</span>
-      </button>
+      <div className="flex h-full w-full min-w-[64px] items-center justify-center">
+        <button
+          type="button"
+          onClick={() => onOpenSettings?.()}
+          className="flex items-center justify-center gap-1.5 rounded-md px-4 py-2 transition-colors duration-200 hover:bg-white/15 active:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+          aria-label={phase === 'asking' ? 'Waiting for location' : 'Loading weather'}
+        >
+          <span className="h-4 w-4 animate-pulse rounded-full bg-[color:var(--surface-strong)]" />
+          <span className="text-xl font-medium leading-none ui-muted">…</span>
+        </button>
+      </div>
     );
   }
 
@@ -290,36 +332,46 @@ export default function WeatherWidget({ onOpenSettings }: { onOpenSettings?: () 
   const label = w.city ? `${codeLabel(w.code)} in ${w.city}` : codeLabel(w.code);
 
   return (
- <div
-  className="relative flex h-full w-full min-w-[64px] flex-col items-center justify-center gap-0.5 px-2"
-  title={label}
->
-  {/* Whole tile opens Settings → Weather; content stays non-interactive so the
-      click always reaches this surface. */}
-  <button
-    type="button"
-    onClick={() => onOpenSettings?.()}
-    aria-label={`${label}. Open weather settings`}
-    className="absolute inset-0 z-0 rounded-md transition-colors hover:bg-white/10"
-  />
+    <div className="relative flex h-full w-full min-w-[64px] items-center justify-center">
+      {/* Content-sized like the time widget, so the hover pill hugs the
+          forecast instead of covering the whole tile. */}
+      <button
+        type="button"
+        onClick={() => onOpenSettings?.()}
+        aria-label={`${label}. Open weather settings`}
+        title={label}
+        className="flex max-w-full flex-col items-center justify-center gap-0.5 rounded-md px-4 py-2 transition-colors duration-200 hover:bg-white/15 active:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+      >
+        {/* Unit or location changes roll the forecast as one unit, matching the
+            time widget's format transition. */}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={`${unit}-${w.city ?? ''}`}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
+            transition={{ duration: reduceMotion ? 0.1 : 0.22, ease: EASE }}
+            className="flex flex-col items-center justify-center gap-0.5"
+          >
+            <span className="flex items-center gap-1.5">
+              <WeatherIcon code={w.code} className="h-5 w-5 shrink-0" />
+              <span className="text-xl font-medium leading-none tabular-nums">
+                {temp}°{unit}
+              </span>
+            </span>
 
-  <div className="pointer-events-none relative z-10 flex flex-col items-center justify-center gap-0.5">
-  <div className="flex items-center gap-1.5">
-    <WeatherIcon code={w.code} className="h-5 w-5 shrink-0" />
-    <span className="text-xl font-medium leading-none tabular-nums">
-      {temp}°{unit}
-    </span>
-  </div>
+            {w.city && (
+              <span
+                className="mt-1.5 max-w-full truncate text-sm leading-none ui-muted"
+                title={w.city}
+              >
+                {w.city}
+              </span>
+            )}
+          </motion.span>
+        </AnimatePresence>
+      </button>
 
-  {w.city && (
-    <span
-      className="max-w-full mt-1.5 truncate text-sm leading-none ui-muted"
-      title={w.city}
-    >
-      {w.city}
-    </span>
-  )}
-  </div>
       {canUpgrade && source === 'ip' && (
         <button
           type="button"

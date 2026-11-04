@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import world from "world-atlas/countries-110m.json";
 import type { WeatherCity } from "@/store/settingsSlice";
+import { reverseGeocodeCity } from "@/lib/geocode";
 
 const MAP_W = 800;
 const MAP_H = 420;
@@ -16,42 +17,12 @@ interface GeoResult {
   admin1?: string;
 }
 
-/** Shape returned by BigDataCloud's keyless reverse geocoder. */
-interface ReverseResult {
-  city?: string;
-  locality?: string;
-  principalSubdivision?: string;
-  countryName?: string;
-}
-
 const toCity = (r: GeoResult): WeatherCity => ({
   name: r.name,
   lat: r.latitude,
   lon: r.longitude,
   country: [r.admin1, r.country].filter(Boolean).join(", ") || undefined,
 });
-
-async function reverseGeocode(lat: number, lon: number, signal?: AbortSignal): Promise<WeatherCity> {
-  const fallback: WeatherCity = { name: `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`, lat, lon };
-  try {
-    const res = await fetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`,
-      { signal },
-    );
-    if (!res.ok) return fallback;
-    const j = (await res.json()) as ReverseResult;
-    const name = j.city || j.locality || j.principalSubdivision;
-    if (!name) return fallback;
-    return {
-      name,
-      lat,
-      lon,
-      country: [j.principalSubdivision, j.countryName].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ") || undefined,
-    };
-  } catch {
-    return fallback;
-  }
-}
 
 /**
  * City picker used by Settings → Weather. Two ways to choose:
@@ -114,9 +85,10 @@ export default function WeatherCityPicker({
     const ctrl = new AbortController();
     pickAbort.current = ctrl;
     setPicking(true);
-    const city = await reverseGeocode(lat, lon, ctrl.signal);
+    const city = await reverseGeocodeCity(lat, lon, ctrl.signal);
     if (!ctrl.signal.aborted) {
-      onSelect(city);
+      // No nearby city found → pin the raw coordinates rather than nothing.
+      onSelect(city ?? { name: `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`, lat, lon });
       setPicking(false);
     }
   };
