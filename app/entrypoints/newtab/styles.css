@@ -199,6 +199,7 @@ body {
   position: relative;
   color: var(--text);
   background: #0b0f14;
+  --background-fade-duration: 800ms;
 }
 
 /* Background layer ------------------------------------------------------- */
@@ -220,7 +221,9 @@ body {
 }
 
 .ntp-bg-fade-in {
-  animation: ntp-bg-fade-in 600ms ease-in-out both;
+  animation: ntp-bg-fade-in var(--background-fade-duration) cubic-bezier(0.4, 0, 0.2, 1) both;
+  will-change: opacity;
+  backface-visibility: hidden;
 }
 
 @keyframes ntp-bg-fade-in {

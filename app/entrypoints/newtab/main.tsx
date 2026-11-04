@@ -4,33 +4,12 @@ import { Provider } from 'react-redux';
 import { browser } from 'wxt/browser';
 import { store } from '@/store';
 import { setAll as setBackground, type BackgroundState } from '@/store/backgroundSlice';
-import { resolveBackground } from '@/lib/backgrounds';
+import { backgroundStill, resolveBackground } from '@/lib/backgrounds';
+import { preloadImage } from '@/lib/preload';
 import App from './App';
 import './styles.css';
 
 const root = createRoot(document.getElementById('root')!);
-
-/** Wait briefly for the still frame so the first React paint already has
- *  the selected background instead of flashing the default one. */
-function preloadImage(src: string) {
-  return new Promise<void>((resolve) => {
-    let settled = false;
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      window.clearTimeout(timeout);
-      resolve();
-    };
-    const timeout = window.setTimeout(finish, 700);
-    const image = new Image();
-    image.onload = () => {
-      if (typeof image.decode === 'function') void image.decode().then(finish, finish);
-      else finish();
-    };
-    image.onerror = finish;
-    image.src = src;
-  });
-}
 
 async function bootstrap() {
   try {
@@ -44,7 +23,7 @@ async function bootstrap() {
 
   const { current, custom } = store.getState().background;
   const look = resolveBackground(current, custom);
-  const still = look.kind === 'image' ? look.src : look.kind === 'video' ? look.poster : undefined;
+  const still = backgroundStill(look);
   if (still) await preloadImage(still);
 
   root.render(

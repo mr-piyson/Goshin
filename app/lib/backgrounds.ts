@@ -74,6 +74,13 @@ export function resolveBackground(current: string, custom?: string): BackgroundL
   return { kind: 'fallback' };
 }
 
+/** The lightweight still that represents a background while it loads. */
+export function backgroundStill(look: BackgroundLook): string | undefined {
+  if (look.kind === 'image') return look.src;
+  if (look.kind === 'video') return look.poster;
+  return undefined;
+}
+
 export function availableBackgrounds(disliked: string[], custom?: string): SystemBackground[] {
   const list = SYSTEM_BACKGROUNDS.filter((b) => !disliked.includes(b.id));
   if (custom && !disliked.includes('custom')) {

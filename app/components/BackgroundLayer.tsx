@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { BackgroundLook } from "@/lib/backgrounds";
+import { backgroundStill, type BackgroundLook } from "@/lib/backgrounds";
+import { preloadImage } from "@/lib/preload";
 import LoopingVideo from "./LoopingVideo";
 
-const FADE_MS = 600;
+// Keep in sync with --background-fade-duration in styles.css.
+const FADE_MS = 800;
 
 interface BackgroundLayerProps {
   look: BackgroundLook;
@@ -76,21 +78,52 @@ export default function BackgroundLayer({ look }: BackgroundLayerProps) {
       return;
     }
 
-    const id = nextId.current++;
-    setLayers((current) => {
-      const previous = current[current.length - 1];
-      return [
-        // Promote the outgoing layer to full opacity if it was still fading in,
-        // then fade the new background over it.
-        ...(previous ? [{ ...previous, fadeIn: false }] : []),
-        { id, look, fadeIn: true },
-      ];
-    });
+    let cancelled = false;
 
-    removalTimer.current = window.setTimeout(() => {
-      setLayers((current) => current.filter((layer) => layer.id === id));
-      removalTimer.current = null;
-    }, FADE_MS + 80);
+    const show = () => {
+      if (cancelled) return;
+
+      const id = nextId.current++;
+      setLayers((current) => {
+        const previous = current[current.length - 1];
+        return [
+          // Promote the outgoing layer to full opacity if it was still fading in,
+          // then fade the new background over it.
+          ...(previous ? [{ ...previous, fadeIn: false }] : []),
+          { id, look, fadeIn: true },
+        ];
+      });
+
+      removalTimer.current = window.setTimeout(() => {
+        // Drop the outgoing layer and release the incoming layer's animation/GPU
+        // hint now that it fully covers the screen.
+        setLayers((current) =>
+          current
+            .filter((layer) => layer.id === id)
+            .map((layer) => ({ ...layer, fadeIn: false })),
+        );
+        removalTimer.current = null;
+      }, FADE_MS + 80);
+    };
+
+    // Decode the incoming still first so the fade never lands on a blank frame.
+    const still = backgroundStill(look);
+    if (!still) {
+      show();
+    } else {
+      void preloadImage(still).then((loaded) => {
+        if (cancelled) return;
+        if (!loaded && look.kind === "image") {
+          setLayers([]);
+          return;
+        }
+        show();
+      });
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [look, removeLayer]);
 
   useEffect(() => {
