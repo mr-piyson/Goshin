@@ -85,6 +85,18 @@ export default function App() {
   // Time widget width is driven by its measured content so the clock can grow
   // (e.g. "Thu, Nov 5, 2026") without clipping; Collapsible animates the change.
   const [timeWidgetWidth, setTimeWidgetWidth] = useState(114);
+  // The first report is a layout correction, not a user-visible change. Snap to
+  // it (duration 0) so a page refresh doesn't animate the clock from the
+  // placeholder width; only later changes animate.
+  const timeWidthSettled = useRef(false);
+  const handleTimeWidthChange = useCallback((width: number) => {
+    setTimeWidgetWidth(width);
+    if (!timeWidthSettled.current) {
+      requestAnimationFrame(() => {
+        timeWidthSettled.current = true;
+      });
+    }
+  }, []);
   const searchRef = useRef<HTMLInputElement>(null);
 
   /** Open the Settings panel directly on a tab (used by the Time/Weather widgets). */
@@ -201,8 +213,12 @@ export default function App() {
         </div>
       </Collapsible>
 
-      <Collapsible open={timeVisible} width={timeWidgetWidth}>
-        <TimeWidget onOpenSettings={() => openSettings("time")} onWidthChange={setTimeWidgetWidth} />
+      <Collapsible
+        open={timeVisible}
+        width={timeWidgetWidth}
+        duration={timeWidthSettled.current ? undefined : 0}
+      >
+        <TimeWidget onOpenSettings={() => openSettings("time")} onWidthChange={handleTimeWidthChange} />
       </Collapsible>
     </div>
   </div>
